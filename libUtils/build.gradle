@@ -9,6 +9,9 @@ ext {
     ext.lifecycle_ktx_version = "2.6.1"
 }
 
+group = "com.github.toyota-m2k"
+version='1.0'
+
 android {
     namespace 'io.github.toyota32k.utils'
     compileSdk 33
