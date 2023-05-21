@@ -49,9 +49,3 @@ fun <T> LiveData<T>.closableObserve(owner: LifecycleOwner, fn:(value:T)->Unit) :
 fun <T> LiveData<T>.closableObserveForever(fn:(value:T)->Unit) : Closeable
         = DisposableForeverObserver(this,fn)
 
-// ToDo
-//fun <T> Binder.observe(owner:LifecycleOwner, data:LiveData<T>,fn:(value:T)->Unit):Binder
-//        = add(data.disposableObserve(owner,fn))
-//fun <T> Binder.observe(data:LiveData<T>,fn:(value:T)->Unit):Binder
-//        = observe(requireOwner, data, fn)
-

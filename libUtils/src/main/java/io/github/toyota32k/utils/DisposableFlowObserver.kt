@@ -48,9 +48,3 @@ fun <T> Flow<T>.disposableObserve(owner: LifecycleOwner, callback:(value:T)->Uni
 fun <T> Flow<T>.disposableObserve(coroutineContext: CoroutineContext, callback:(value:T)->Unit):DisposableFlowObserver<T> =
     DisposableFlowObserver(this, coroutineContext, callback)
 
-// ToDo
-//fun <T> Binder.observe(owner:LifecycleOwner, data:Flow<T>, callback:(value:T)->Unit):Binder
-//    = add(data.disposableObserve(owner,callback))
-//
-//fun <T> Binder.observe(data:Flow<T>, callback:(value:T)->Unit):Binder
-//        = add(data.disposableObserve(requireOwner,callback))
