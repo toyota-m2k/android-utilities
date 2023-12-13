@@ -110,6 +110,7 @@ dependencies {
 //}
 
 afterEvaluate {
+    // gradlew publishToMavenLocal
     publishing {
         publications {
             // Creates a Maven publication called "release".
