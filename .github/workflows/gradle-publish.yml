@@ -43,7 +43,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         package-path: ./build/libs/android-utilities-${{ env.RELEASE_TAG }}.aar
-        filters:
+        filters: Release
           - type: "semver"
             operator: "not"
             value: "*-debug"
