@@ -1,0 +1,30 @@
+name: Publish Android Utilities Library
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Publish to GitHub Packages
+        uses: actions/github-package-publish@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package-path: ./build/libs/android-utilities-${{ env.RELEASE_TAG }}.aar
+          filters:
+            - type: "semver"
+              operator: "not"
+              value: "*-debug"
