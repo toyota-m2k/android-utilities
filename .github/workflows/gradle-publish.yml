@@ -38,8 +38,10 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+      # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
+      # the publishing section of your build.gradle
     - name: Publish to GitHub Packages
-      uses: actions/github-package-publish@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        package-path: ./build/libs/android-utilities-${{ env.RELEASE_TAG }}.aar
+      run: ./gradlew publish
+      env:
+        USERNAME: ${{ github.actor }}
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
