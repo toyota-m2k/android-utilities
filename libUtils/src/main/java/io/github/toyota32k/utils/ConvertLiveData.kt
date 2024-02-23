@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
  * Mutableでないなら、Filterで十分なのだけど、双方向リンクに使うために実装した。
  */
 class ConvertLiveData<R,C>(
-    val source: MutableLiveData<R>,
+    val source: MutableLiveData<R?>,
     val convert:(R?)->C?,
     val invert:(C?)->R?)
     : MediatorLiveData<C>() {
