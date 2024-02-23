@@ -31,41 +31,41 @@ class SingleLiveEventTest {
     fun singleEventTest() {
         var activity = createActivity()
         val event = SingleLiveEvent<Int>()
-        var value = 0
+        var testValue = 0
         val observer = object: Observer<Int> {
-            override fun onChanged(t: Int) {
-                value = t
+            override fun onChanged(value: Int) {
+                testValue = value
             }
         }
 
         event.observe(activity,observer)
-        assertEquals(0, value,)
+        assertEquals(0, testValue,)
 
         // Activityが生きている間は、fire()した値が、普通にイベントとして受け取れる
         event.fire(2)
-        assertEquals(2, value,)
+        assertEquals(2, testValue,)
         event.fire(4)
-        assertEquals(4, value,)
+        assertEquals(4, testValue,)
 
         // Activity が死んだら、イベントは発行されない
         finish()
         event.fire(6)
-        assertEquals(4, value,)
+        assertEquals(4, testValue,)
         event.removeObserver(observer)
 
         // 新しいActivityでobserverし直したら（）、死んでいる間に発行されたイベントが受け取れる
         activity = createActivity()
         event.observe(activity,observer)
-        assertEquals(6, value,)
+        assertEquals(6, testValue,)
 
         // removeObserverしたら、当然、イベントは受け取らない
         event.removeObserver(observer)
         event.fire(8)
-        assertEquals(6, value,)
+        assertEquals(6, testValue,)
 
         // observeし直したら、イベントが来る
         event.observe(activity,observer)
-        assertEquals(8, value,)
+        assertEquals(8, testValue,)
 
         finish()
         event.removeObserver(observer)
