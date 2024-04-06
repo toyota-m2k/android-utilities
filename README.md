@@ -26,7 +26,21 @@
 ## Chronos
 
 時間計測クラス。関数の呼び出しからリターンするまでの時間を計測したり、個々の関数呼び出しの前後でラップ時間を記録したりできる。
-計測結果は UtLog に出力する。
+計測結果は UtLog に出力する。ラップタイムを記録するような場合は、Chronos クラスを単体で使うが、１つのブロックの時間を計るだけなら、UtLog#chronos() を使うのが簡単。
+
+#### 使用例
+```Kotlin
+val logger = UtLog("Sample")
+fun takePicture(): Bitmap? {
+  logger.chronos {
+    return try {
+        imageCapture.take()
+    } catch (e: Throwable) {
+        TcLib.logger.error(e)
+        null
+    }
+}
+```
 
 ## CollectionExt
 
@@ -116,6 +130,8 @@ WeakReference的な手法で利用する。
 
 ## ListSorter
 
+※UtSorter と全く同じ内容。。。どういう経緯でこうなったか不明。ToDo: そのうち整理する。
+
 MutableList を内包し、ソートされた状態を維持して、add (insert) できるようにする。
 特に、[ObservableList](https://github.com/toyota-m2k/android-binding/blob/main/libBinder/src/main/java/io/github/toyota32k/binder/list/ObservableList.kt) をソートした状態で使用するとき、
 アイテム挿入で全リスト作り直しになって表示の全更新が発生するのを回避できる。
@@ -147,7 +163,7 @@ Mutableな Sizeクラス。
 ## NamedMutex
 
 名前付きMutexクラス。
-名前をキーにグローバルにMutexを生成・参照できる。
+名前をキーにグローバルにMutexを生成・参照できるようにするために作成。
 
 ## ObservableFlow
 
@@ -164,6 +180,21 @@ removeObserver()を使えば、ゴミが残らず衛生的。
 ## SharedPreferenceDelegate
 
 Android の SharedPreference の読み書きに、プロパティ委譲を利用できるようにするための、ReadWriteProperty i/f の実装を提供するクラス。
+
+```kotlin
+object Settings {
+    private lateinit var spd :SharedPreferenceDelegate
+
+    fun initialize(application: Application) {
+        if(this::spd.isInitialized) return
+        spd = SharedPreferenceDelegate(application)
+    }
+    
+    var userName by spd.pref("")
+    var deviceName by spd.pref(Build.MODEL)
+    var activated by spd.pref(false)
+}
+```
 
 ## SingleLiveEvent
 
@@ -214,18 +245,110 @@ awaitすると、complete が呼ばれるまでサスペンドする。
 ログ出力用ユーティリティ。
 出力する文字列にタグ、クラス名、関数名などを自動的に付加する。
 
-## UtManualIncarnateResetableValue
+## UtMutableStateFlowLiveData
 
-UtMutableStateFlowLiveData.kt
-UtObservableCounter.kt
-UtObservableFlag.kt
-UtPropOwner.kt
+MutableStateFlow を MutableLiveData として利用するための変換クラス
+
+- fun <T> MutableStateFlow<T>.asMutableLiveData(lifecycleOwner: LifecycleOwner): MutableLiveData<T>
+
+
+## UtObservableCounter
+
+Flowによる参照数の監視が可能な参照カウンタクラス
+
+
+## UtObservableFlag
+
+Flow による監視可能なフラグクラス。
+内部的にフラグ状態はカウンタとして保持しており、ネストした呼び出しが可能。
+trySetIfNot(), withFlagIfNot()を使うことで、普通のフラグ的にも使える。
+
+## UtPropOwner
+
+ViewModelにおいて、監視可能なプロパティの実装にMutableStateFlowを使うが、Viewからは値を参照（画面に表示）するだけで、値の変更はViewModel内の処理でのみ行う、というケースも多い。
+このような場合、MutableStateFlowを public に晒すのは気持ち悪くないですか？
+
+そこで、外向きには、StatusFlow としてプロパティを公開しつつ、内部的には、MutableStateFlowとして扱うことを実現する。
+- この仕組みを使いたいクラス（ViewModel派生クラスなど）を、IUtPropOwner派生にする。
+- プロパティは、val prop:StateFlow<T> = MutableStateFlow<T>() のように実装する。
+- プロパティの値を変更するときは、そのクラス内から、prop.mutable.value に値をセットする。
+
+#### 使用例
+```kotlin
+class HogeViewModel: ViewModel(), IFlowPropertyHost {
+  val isBusy:StateFlow<Boolean> = MutableStateFlow(false)
+
+  fun setBusy(busy:Boolean) {
+    isBusy.mutable.value = busy       // <---!!!
+  }
+}
+
+class HogeActivity {
+  lateinit var viewModel:HogeViewModel
+
+  fun doSomething() {
+   if(viewModel.isBusy.value) return
+   // viewModel.isBusy.value = true     // error (the property of "isBusy" is immutable.)
+   viewModel.setBusy(true) {
+     try {
+       // do something
+     } finally {
+       viewModel.setBusy(false)
+     }
+   }
+  }
+}
+```
+ちなみに、mutable プロパティは、単に StateFlowの拡張プロパティなので、グローバルに宣言してしまうことも可能なのだが、
+さすがにそれは気が引けるので、IUtPropOwner i/f 内に隠蔽し、これを使いたいクラスで、このi/f を継承するルールにしてみた。
+当然、IUtPropOwnerを継承するクラスからは、(Mutableでない) StateFlow にも mutable プロパティが生えてしまい、
+アクセスすると、IllegalCast違反で死ぬだろう（あえて型チェックなんかせず、死ぬようにしている）が、そのあたりは、プログラマの責任で。
+
 
 ## UtResetableValue
 
+```
+lateinit var some:SomeClass
+```
+とすれば、someは、NonNullとしてチェックなしに使えて便利なのだが、一旦、値をセットすると未初期化状態に戻せない（と思う）。
+だから open --> close --> open のように破棄後に再利用されるクラスを作る場合など、無効状態を表すために、やむを得ず nullableにすることがある。
+しかし、値の有効期間を別の方法で正しく管理しているなら、いちいち null チェックするのが煩わしい。そこで、
+lateinit的に（nullチェックなしに）使え、かつ、未初期化状態にリセット可能なクラスを作ってみた。
 
+- interface IUtResetableValue&lt;T><br>リセット可能なlateinit的クラスのi/f定義
+- class UtResetableValue&lt;T><br>最も基本的なクラス。単純にset/get/resetする。
+- class UtLazyResetableValue&lt;T>(val fn:()->T)<br>値が要求されたときに初期化するlazy的動作の本命クラス。
+- class UtResetableFlowValue&lt;T>(private val flow: MutableStateFlow&lt;T?><br>値を保持するためにMutableStateFlowを使い、Flow<T?> として扱える値クラス。Flow i/f は、T? (nullable)となる点はご愛敬。
+- class UtNullableResetableValue&lt;T>(private val allowKeepNull:Boolean=false, private val lazy:(()->T?)?=null) <br>IUtResetableValueの本来の目的を完全に見失い、nullも保持できるようにしてしまったクラス。なぜ作ったか忘れてしまったが、無駄なインスタンス化を避け、lazy的に必要なときにだけインスタンスを作りたい、という場合に使ったんじゃないかと思う。
+- class UtManualIncarnateResetableValue&lt;T>(private val onIncarnate:()->T, private val onReset:((T)->Unit)?)<br>UtLazyResetableValueの亜種だが、一旦リセットされると、incarnate() を呼ばない限り、valueを参照で、勝手に蘇生しない、こじらせ度maxなクラス。何に使ったんだっけ？？？
 
-UtSortedList.kt
-UtSorter.kt
-ViewExt.kt
-WeakReferenceDelegate.kt
+## UtSortedList
+
+常にソートされた状態を維持するリストクラス。
+
+## UtSorter
+
+MutableList を内包し、ソートされた状態を維持して、add (insert) できるようにする。
+特に、[ObservableList](https://github.com/toyota-m2k/android-binding/blob/main/libBinder/src/main/java/io/github/toyota32k/binder/list/ObservableList.kt) をソートした状態で使用するとき、
+アイテム挿入で全リスト作り直しになって表示の全更新が発生するのを回避できる。
+
+## ViewExt
+
+Viewのサイズやマージン操作、サイズ計算(dp/px変換など）を拡張関数として定義。
+
+## WeakReferenceDelegate
+
+WeakReference をプロパティ委譲するためのクラス
+
+#### 使用例
+```Kotlin
+class CameraManipulator {
+  private var camera:Camera? by WeakReferenceDelegate()
+  fun attachCamera(camera: Camera) {
+    this.camera = camera    // create a WeakReference to `camera` instance.
+  }
+  fun zoom() {
+    this.camera?.zoom()     // use the WeakReference as a nullable field.
+  }
+}
+```
