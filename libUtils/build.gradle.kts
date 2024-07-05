@@ -41,44 +41,30 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.lifecycle.extensions)
+    implementation(libs.preference.ktx)
 
-    val lifecycle_ktx_version = "2.8.3"
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_ktx_version")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_ktx_version")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_ktx_version")
-    implementation("androidx.lifecycle:lifecycle-service:$lifecycle_ktx_version")
+    implementation(libs.lifecycleRuntimeKtx)
+    implementation(libs.lifecycleLivedataKtx)
+    implementation(libs.lifecycleViewmodelKtx)
+    implementation(libs.lifecycleService)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.junitExt)
+    androidTestImplementation(libs.espressoCore)
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-    testImplementation("androidx.test:core:1.6.1")
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
-    testImplementation("org.mockito:mockito-inline:5.2.0")
-    testImplementation("org.robolectric:robolectric:4.11.1")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.core.testing)
 }
 
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            create("release", MavenPublication::class) {
-//                from(components["release"])
-//
-//                groupId = "com.github.toyota-m2k"
-//                artifactId = "android-utilities"
-//                version = "LOCAL"
-//            }
-//        }
-//    }
-//}
-
+// ./gradlew publishToMavenLocal
 publishing {
     publications {
         // Creates a Maven publication called "release".

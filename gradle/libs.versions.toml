@@ -1,0 +1,39 @@
+[versions]
+core = "1.6.1"
+coreTesting = "2.2.0"
+kotlin = "1.9.22"
+core-ktx = "1.13.1"
+appcompat = "1.7.0"
+kotlinxCoroutinesTest = "1.8.1"
+lifecycleExtensions = "2.2.0"
+material = "1.12.0"
+constraintlayout = "2.1.4"
+junit = "4.13.2"
+junitExt = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleKtx = "2.8.3"
+mockitoInline = "5.2.0"
+mockitoKotlin = "2.2.0"
+preferenceKtx = "1.2.1"
+robolectric = "4.11.1"
+
+[libraries]
+core = { module = "androidx.test:core", version.ref = "core" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+junit = { module = "junit:junit", version.ref = "junit" }
+junitExt = { module = "androidx.test.ext:junit", version.ref = "junitExt" }
+espressoCore = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
+lifecycleRuntimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleKtx" }
+lifecycleLivedataKtx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleKtx" }
+lifecycleViewmodelKtx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleKtx" }
+lifecycleService = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycleKtx" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
+mockito-kotlin = { module = "com.nhaarman.mockitokotlin2:mockito-kotlin", version.ref = "mockitoKotlin" }
+preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
