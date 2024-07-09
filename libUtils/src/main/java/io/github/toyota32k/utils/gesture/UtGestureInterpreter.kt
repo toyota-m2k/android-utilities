@@ -2,12 +2,12 @@ package io.github.toyota32k.shared.gesture
 
 import android.content.Context
 import android.graphics.PointF
+import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.View.OnTouchListener
-import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.LifecycleOwner
 import io.github.toyota32k.utils.*
 
@@ -285,8 +285,8 @@ class UtGestureInterpreter(
 
     // endregion
 
-    private val touchGestureDetector: GestureDetectorCompat =
-        GestureDetectorCompat(applicationContext, SwipeGestureListener())
+    private val touchGestureDetector: GestureDetector =
+        GestureDetector(applicationContext, SwipeGestureListener())
     private var scaleGestureDetector: ScaleGestureDetector? = if (enableScaleEvent) {
         ScaleGestureDetector(applicationContext, ScaleListener())
     } else null
