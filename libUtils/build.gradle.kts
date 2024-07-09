@@ -72,7 +72,7 @@ publishing {
             // You can then customize attributes of the publication as shown below.
             groupId = "com.github.toyota-m2k"
             artifactId = "android-utilities"
-            version = "LOCAL"
+            version = project.findProperty("githubReleaseTag") as String? ?: "LOCAL"
 
             afterEvaluate {
                 from(components["release"])
