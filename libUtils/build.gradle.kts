@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.android.library)
     id("maven-publish")
 }
 
@@ -72,7 +72,7 @@ publishing {
             // You can then customize attributes of the publication as shown below.
             groupId = "com.github.toyota-m2k"
             artifactId = "android-utilities"
-            version = "1.0"
+            version = "LOCAL"
 
             afterEvaluate {
                 from(components["release"])
