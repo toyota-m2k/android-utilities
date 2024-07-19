@@ -31,9 +31,24 @@ enum class Timing {
  * - タップ
  * - ロングタップ（長押し）
  * - ダブルタップ ... rapidTap == false の場合のみ
- * - スクロール（ドラッグ）
+ * - スクロール（ドラッグ、スワイプ）
  * - フリック（Fling: 弾くような動作＝速めのドラッグ）
- * - スケール（スワイプ、ピンチ） ... enableScaleEvent == true の場合のみ
+ * - スケール（ピンチ） ... enableScaleEvent == true の場合のみ
+ *
+ * 各イベントは、それぞれ対応するリスナー経由で取得できる。
+ * - tapListener
+ * - longTapListener
+ * - doubleTapListener
+ * - scrollListener
+ * - flickVerticalListener
+ * - flickHorizontalListener
+ * - scaleListener
+ *
+ * setup()メソッドを使うと、これらのリスナーがコンパクトに記述できるのでおススメ。
+ *
+ * @param   applicationContext  コンテキスト
+ * @param   enableScaleEvent    trueにするとピンチ操作によるスケールジェスチャーをハンドルする（＝ScaleGestureDetectorを有効化する）
+ * @param   rapidTap            true にすると、onSingleTapUp で tapEvent を発行。ただし、doubleTapEventは無効になる。false なら、onSingleTapConfirmedで、tapEventを発行するので、やや遅延が発生する。
  */
 class UtGestureInterpreter(
     val applicationContext: Context,
@@ -48,6 +63,9 @@ class UtGestureInterpreter(
         val end: Boolean
     }
 
+    /**
+     * スクロールイベントを受け取るためのリスナー登録用
+     */
     val scrollListener: Listeners<IScrollEvent>
         get() = scrollListenerRef.value
 
@@ -82,6 +100,9 @@ class UtGestureInterpreter(
         val timing: Timing
     }
 
+    /**
+     * スケールイベントを受け取るためのリスナー登録用
+     */
     val scaleListener: Listeners<IScaleEvent>
         get() = scaleListenerRef.value
 
@@ -113,6 +134,9 @@ class UtGestureInterpreter(
     class PositionalEvent(override var x: Float, override var y: Float): IPositionalEvent
     private val positionalEvent = PositionalEvent(0f,0f)
 
+    /**
+     * タップイベントを受け取るためのリスナー登録用
+     */
     val tapListeners: Listeners<IPositionalEvent>
         get() = tapListenersRef.value
 
@@ -130,6 +154,9 @@ class UtGestureInterpreter(
     // endregion
 
     // region Long Tap
+    /**
+     * ロングタップイベントを受け取るためのリスナー登録用
+     */
     val longTapListeners: Listeners<IPositionalEvent>
         get() = longTapListenersRef.value
 
@@ -147,6 +174,9 @@ class UtGestureInterpreter(
 
     // region Double Tap
 
+    /**
+     * ダブルタップイベントを受け取るためのリスナー登録用
+     */
     val doubleTapListeners: Listeners<IPositionalEvent>
         get() = doubleTapListenersRef.value
     private val doubleTapListenersRef = UtLazyResetableValue { Listeners<IPositionalEvent>() }
@@ -169,6 +199,9 @@ class UtGestureInterpreter(
     val hasFlickListeners:Boolean
         get() = hasFlickHorizontalListeners || hasFlickVerticalListeners
 
+    /**
+     * 水平方向フリックイベントを受け取るためのリスナー登録用
+     */
     val flickHorizontalListeners: Listeners<IFlickEvent>
         get() = flickHorizontalListenersRef.value
     private val flickHorizontalListenersRef = UtLazyResetableValue { Listeners<IFlickEvent>() }
@@ -184,6 +217,9 @@ class UtGestureInterpreter(
         } else false
     }
 
+    /**
+     * 垂直方向フリックイベントを受け取るためのリスナー登録用
+     */
     val flickVerticalListeners: Listeners<IFlickEvent>
         get() = flickVerticalListenersRef.value
     private val flickVerticalListenersRef = UtLazyResetableValue { Listeners<IFlickEvent>() }
@@ -251,6 +287,10 @@ class UtGestureInterpreter(
             mFlickVertical = fn
         }
 
+        /**
+         * リスナーを構築する
+         * @param owner ライフサイクルオーナー。ライフが尽きるときリスナーは自動的に解除される。
+         */
         fun build(owner:LifecycleOwner) {
             mScroll?.apply {
                 scrollListener.add(owner, this)
@@ -275,11 +315,33 @@ class UtGestureInterpreter(
             }
         }
     }
-    fun setup(owner:LifecycleOwner, view:View, setupMe: IListenerBuilder.()->Unit) {
+
+    /**
+     * UtGestureInterpreterへのビューのバインド＋リスナー登録をコンパクトに記述するためのヘルパー関数
+     *
+     * @param owner ライフサイクルオーナー（Activityなど）。オーナーのライフが尽きるときリスナーは自動的に登録解除される。
+     * @param view  タッチイベントを監視するビュー
+     * @param setupMe IListenerBuilder経由でリスナーを登録する関数
+     *
+     * val gesture = UtGestureInterpreter(application, enableScaleEvent=true, rapidTap=true)
+     * gesture.setup(owner, targetView) {
+     *     onTap {
+     *         タップの処理
+     *     }
+     *     onScroll {
+     *         スクロール（ドラッグ）処理
+     *     }
+     *     onScale {
+     *         スケールのハンドリング
+     *     }
+     * }
+     */
+    fun setup(owner:LifecycleOwner, view:View, setupMe: IListenerBuilder.()->Unit):UtGestureInterpreter {
         attachView(view)
         ListenerBuilder().apply {
             setupMe()
         }.build(owner)
+        return this
     }
 
 
@@ -291,16 +353,27 @@ class UtGestureInterpreter(
         ScaleGestureDetector(applicationContext, ScaleListener())
     } else null
 
-    fun attachView(view: View) {
+    /**
+     * ターゲットビューをUtGestureInterpreterにアタッチする
+     * ターゲットビューの onTouchListener を書き換える。他のリスナーと共存できないので注意。
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun attachView(view: View):UtGestureInterpreter {
         view.isClickable = true
         view.setOnTouchListener(this)
+        return this
     }
 
-    fun detachView(view:View) {
+    /**
+     * ターゲットビューをデタッチする
+     */
+    @Suppress("unused")
+    fun detachView(view:View):UtGestureInterpreter {
         view.setOnTouchListener(null)
+        return this
     }
 
-    var scrolling: Boolean = false
+    private var scrolling: Boolean = false
 
     override fun onTouch(v: View?, event: MotionEvent): Boolean {
 //        logger.debug("$event")
@@ -447,6 +520,5 @@ class UtGestureInterpreter(
         const val GI_LOG = false
         val logger: UtLog = UtLog("GI", null, UtGestureInterpreter::class.java)
     }
-
 }
 

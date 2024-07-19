@@ -1,6 +1,7 @@
 # android-utilities
 
 さまざまなアプリで利用できる便利な機能を実装したライブラリです。
+Android 5 くらいの時代から少しずつ作っていたものなので、SDK がサポートして不要になったAPIなども含まれていますが、そのあたりはご愛敬。
 
 ## ActivityExt
 
@@ -17,6 +18,8 @@
 ## ApplicationViewModelStoreOwner
 
 アプリケーションスコープでViewModelの生存を保証する ViewModelStore の実装クラス。　
+Activityなどのライフサイクルに依存しない ViewModel を作成する場合に使用する。
+ただし、安易に使うと、リソースリークの原因になるので要注意。
 
 ## Callback
 
@@ -79,7 +82,7 @@ Disposer#dispose() メソッドで、まとめてdisposeできる。
 
 .NETの ManualResetEvent/AutoResetEvent に相当する、イベントの発生を待ち合わせるための同期オブジェクト。
 内部的に Flowを使っており、waitOne()を呼び出すと、外部から、set() が呼ばれるまでサスペンドする。
-Flow登場以前には、Channelベースの SuspendableEvent を使っていたが、今後は、FlowableEventの使用を推奨。
+Flow登場以前には、Channelベースの SuspendableEvent を使っていたが、現在は、FlowableEventの使用を推奨。
 
 ## FlowExt
 
@@ -94,7 +97,7 @@ try/finally の代わりに、use() が使えるので後始末の漏れを防�
 - fun IDisposable.asCloseable() : Closeable <br>
 IDisposable --> Closeable変換用拡張関数
 
-GenericDisposable.kt
+## GenericDisposable
 
 GenericCloseableのIDisposable版。
 後始末が必要な処理を IDisposable i/f にラップするクラス。
@@ -125,7 +128,7 @@ WeakReference的な手法で利用する。
 ## Listeners
 
 複数のコールバック関数を保持できるハンドラコンテナ。
-ライフサイクルオーナーが破棄され（DESTROYED）るときに、自動的にハンドラの登録が解除される。
+ライフサイクルオーナーが破棄されるとき（DESTROYEDになったとき）に、自動的にハンドラの登録が解除される。
 
 
 ## ListSorter
@@ -163,7 +166,7 @@ Mutableな Sizeクラス。
 ## NamedMutex
 
 名前付きMutexクラス。
-名前をキーにグローバルにMutexを生成・参照できるようにするために作成。
+名前をキーにグローバルに生成・参照できるMutex。
 
 ## ObservableFlow
 
@@ -336,6 +339,27 @@ MutableList を内包し、ソートされた状態を維持して、add (insert
 
 Viewのサイズやマージン操作、サイズ計算(dp/px変換など）を拡張関数として定義。
 
+- Context
+  - fun Context.activity(): Activity?<br>Context が所属する Activity を取得する。
+  - fun Context.lifecycleOwner() : LifecycleOwner?<br>Context が所属する LifecycleOwner を取得する。
+  - fun Context.viewModelStorageOwner(): ViewModelStoreOwner?<br>Context が所属する ViewModelStoreOwner を取得する。
+  - fun Context.dpToPx(dp:Float): Int<br>dp を px に変換する。
+  - fun Context.pxToDp(px:Float): Int<br>px を dp に変換する。
+- View
+  - fun View.activity(): Activity?<br>View が所属する Activity を取得する。
+  - fun View.lifecycleOwner() : LifecycleOwner?<br>View が所属する LifecycleOwner を取得する。
+  - fun View.viewModelStorageOwner(): ViewModelStoreOwner?<br>View が所属する ViewModelStoreOwner を取得する。
+  - fun View.setLayoutWidth(width:Int)<br>View の LayoutParams の width を設定する。
+  - fun View.getLayoutWidth() : Int<br>View の LayoutParams の width を取得する。layoutParams が取得できなければ、width プロパティを返す。
+  - fun View.setLayoutHeight(height:Int)<br>View の LayoutParams の height を設定する。
+  - fun View.getLayoutHeight() : Int<br>View の LayoutParams の height を取得する。layoutParams が取得できなければ、height プロパティを返す。
+  - fun View.setLayoutSize(width:Int, height:Int)<br>View の LayoutParams の width, height を設定する。
+  - fun View.measureAndGetSize() : Size<br>View のサイズを計測して返す。
+  - fun View.setMargin(left:Int, top:Int, right:Int, bottom:Int)<br>View の LayoutParams の margin を設定する。
+- ListView
+  - fun ListView.calcContentHeight():Int<br>ListView のコンテントの高さ（各アイテムの高さの合計）を計算する（可変アイテムサイズ用） 
+  - fun ListView.calcFixedContentHeight():Int<br>ListView のコンテントの高さ（各アイテムの高さの合計）を計算する（固定アイテムサイズ用） 
+
 ## WeakReferenceDelegate
 
 WeakReference をプロパティ委譲するためのクラス
@@ -351,4 +375,182 @@ class CameraManipulator {
     this.camera?.zoom()     // use the WeakReference as a nullable field.
   }
 }
+```
+
+## gesture
+
+タッチイベントの処理、ジェスチャー操作に関するユーティリティクラス群
+
+### UtGestureInterpreter
+Android の低レベルで複雑なタッチイベントを総合的に評価して、
+- タップ   --> tapListener
+- ロングタップ --> longTapListener
+- ダブルタップ --> doubleTapListener
+- スクロール --> scrollListener
+- 縦フリック --> flickVerticalListener
+- 横フリック --> flickHorizontalListener
+- ピンチ --> scaleListener
+のイベントに振り分ける。利用者は、リスナーにハンドラを登録することで、各イベントを受け取って処理できる。
+```kotlin
+class MainActivity : AppCompatActivity() {
+    // UtGestureInterpreter を作成
+    // この例では、
+    // - スケールイベントは処理しない
+    // - ダブルタップは処理しない（-->その分、シングルタップの判定が少し速い）
+    private val gestureInterpreter: UtGestureInterpreter by lazy { UtGestureInterpreter(applicationContext, enableScaleEvent = false, rapidTap = true) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val contentView = findViewById<TextView>(R.id.content_view)
+        gestureInterpreter.setup(this, contentView) {
+            onTap { 
+                edit()      // タップイベントで、テキストの編集モードを開始する
+            }
+            onLongTap { 
+                showProperty()    //ロングタップで、プロパティ表示
+            }
+            onFlickHorizontal { e->
+                when (e.direction) {
+                    Direction.Start -> previousPage()
+                    Direction.End -> nextPage()
+                }
+            }
+        }
+    }
+}
+```
+
+### UtManipulationAgent / IUtManipulationTarget
+UtManipulationAgentは、UtGestureInterpreter のスクロール/スケールイベントを利用して、ビューの拡大、移動、ページ切り替えなどを実現するクラス。
+IUtManipulationTargetは、UtManipulationAgent が操作するビューの情報を提供するためのインターフェース。
+
+```kotlin
+class MainActivity : AppCompatActivity(), IUtManipulationTarget {
+    // UtGestureInterpreter を作成
+    // この例では、
+    // - ダブルタップは処理しない（-->その分、シングルタップの判定が少し速い）
+    // - UtManipulationAgentで使うので、scaleイベントも扱う
+    private val gestureInterpreter: UtGestureInterpreter by lazy { UtGestureInterpreter(applicationContext, enableScaleEvent = true, rapidTap = true) }
+    // UtManipulationAgent を作成
+    // この例では、MainActivity自体がIUtManipulationTargetを実装しているので、thisを引数に渡して構築。
+    private val manipulationAgent: UtManipulationAgent by lazy { UtManipulationAgent(this/*IUtManipulationTargetインスタンス*/) }
+
+    // region IUtManipulationTarget i/f
+    override val parentView: View get() = findViewById<FrameLayout>(R.id.parent_view)
+    override val contentView: View get() = findViewById<TextView>(R.id.content_view)
+    // 横幅の40%オーバースクロールしたら、changePage
+    override val overScrollX: Float = 0.4f
+    // 縦方向はオーバースクロールしない
+    override val overScrollY: Float = 0f
+    // 横方向オーバースクロールでページ切り替え
+    override val pageOrientation: EnumSet<Orientation> = EnumSet.of(Orientation.Horizontal)
+    override fun changePage(orientation: Orientation, dir: Direction): Boolean {
+      // ページ切り替えの実行
+      // return true  移動した --> 続くページ切り替えアニメーションを実行。scale/translation を元に戻す
+      //        false 移動しなかった --> びよーんと戻す
+      return true
+    }
+  
+    override fun hasNextPage(orientation: Orientation, dir: Direction): Boolean {
+      // 次/前のページはあるか？
+      return true
+    }
+    // endregion
+  
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val containerView = findViewById<FrameLayout>(R.id.parent_view)
+        val targetView = findViewById<TextView>(R.id.content_view)
+        gestureInterpreter.setup(this, containerView) {
+            onTap {
+                edit()      // タップイベントで、テキストの編集モードを開始する
+            }
+            onLongTap {
+                showProperty()    //ロングタップで、プロパティ表示
+            }
+            onFlickHorizontal { e->
+                when (e.direction) {
+                    Direction.Start -> previousPage()
+                    Direction.End -> nextPage()
+                }
+            }
+            // onScroll / onScale を manipulationAgentに接続
+            onScroll(manipulationAgent::onScroll)
+            onScale(manipulationAgent::onScale)
+        }
+    }
+}
+```
+上の例では、説明のため MainActivity が IUtManipulationTarget を実装したが、UtSimpleManipulationTarget を使うと、次のように実装を簡素化できる。
+onCreate()の実装は同じだが、IUtManipulationTargetの実装のための、ごちゃごちゃしたプロパティやメソッドの実装をUtSimpleManipulationTargetに隠蔽できるので、可視性が向上する。
+ただし、アプリの構成により、ズーム操作の対象となるビューが動的に変わる場合、
+例えば、画像・ビデオ・テキストなどのコンテンツが切り替わる場合は、UtSimpleManipulationTargetは使えないので、その場合は、IUtManipulationTargetを実装する必要がある。
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+    // UtGestureInterpreter を作成
+    // この例では、
+    // - ダブルタップは処理しない（-->その分、シングルタップの判定が少し速い）
+    // - UtManipulationAgentで使うので、scaleイベントも扱う
+    private val gestureInterpreter: UtGestureInterpreter by lazy { UtGestureInterpreter(applicationContext,enableScaleEvent = true,rapidTap = true) }
+
+    // UtSimpleManipulationTarget を使って、IUtManipulationTargetを実装
+    private val manipulationTarget: IUtManipulationTarget by lazy {
+        UtSimpleManipulationTarget(findViewById<FrameLayout>(R.id.parent_view),findViewById<TextView>(R.id.content_view),0.4f,0f,EnumSet.of(Orientation.Horizontal))
+            .callbacks {
+                changePage { orientation, dir ->
+                    // change page
+                    true
+                }
+                hasNextPage { orientation, dir ->
+                    true
+                }
+            }
+    }
+
+    // UtManipulationAgent を作成
+    // UtSimpleManipulationTargetで作ったIUtManipulationTargetインスタンスを使ってUtManipulationAgentを構築
+    private val manipulationAgent: UtManipulationAgent by lazy { UtManipulationAgent(manipulationTarget) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState)
+      setContentView(R.layout.activity_main)
+  
+      val containerView = findViewById<FrameLayout>(R.id.parent_view)
+      val targetView = findViewById<TextView>(R.id.content_view)
+      gestureInterpreter.setup(this, containerView) {
+        onTap {
+          edit()      // タップイベントで、テキストの編集モードを開始する
+        }
+        onLongTap {
+          showProperty()    //ロングタップで、プロパティ表示
+        }
+        onFlickHorizontal { e->
+          when (e.direction) {
+            Direction.Start -> previousPage()
+            Direction.End -> nextPage()
+          }
+        }
+        // onScroll / onScale を manipulationAgentに接続
+        onScroll(manipulationAgent::onScroll)
+        onScale(manipulationAgent::onScale)
+      }
+    }
+}
+```
+
+### UtClickRepeater
+
+ボタンを押し続けたときに、Clickイベントを連続して発行できるようにするクラス。
+view.setOnTouchListener を使うので、これを使う仕掛け（UtGestureInterpreterなど）とは共存できない。
+
+```kotlin
+val clickRepeater = UtClickRepeater()
+clickRepeater.attachView(findById(R.id.button))
+  ...
+clickRepeater.dispose()
 ```

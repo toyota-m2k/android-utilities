@@ -3,6 +3,7 @@ package io.github.toyota32k.shared.gesture
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.view.View
+import androidx.lifecycle.LifecycleOwner
 import io.github.toyota32k.utils.UtLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,17 +26,53 @@ open class UtSimpleManipulationTarget(
     override val overScrollY: Float = 0f,
     override val pageOrientation: EnumSet<Orientation> = EnumSet.noneOf(Orientation::class.java)
 ) : IUtManipulationTarget {
+    interface IUtManipulationTargetCallbacks {
+        fun changePage(fn: (orientation: Orientation, dir: Direction) -> Boolean)
+        fun hasNextPage(fn: (orientation: Orientation, dir: Direction) -> Boolean)
+    }
+
+    private class Callbacks : IUtManipulationTargetCallbacks {
+        var changePageProc:((orientation: Orientation, dir: Direction) -> Boolean)? = null
+        var hasNextPageProc:((orientation: Orientation, dir: Direction) -> Boolean)? = null
+        override fun changePage(fn: (orientation: Orientation, dir: Direction) -> Boolean) {
+            changePageProc = fn
+        }
+
+        override fun hasNextPage(fn: (orientation: Orientation, dir: Direction) -> Boolean) {
+            hasNextPageProc = fn
+        }
+    }
+    private var mCallbacks:Callbacks? = null
+    fun callbacks(fn:IUtManipulationTargetCallbacks.()->Unit):UtSimpleManipulationTarget {
+        mCallbacks = Callbacks().apply {
+            fn()
+        }
+        return this
+    }
+
     override fun changePage(orientation: Orientation, dir: Direction): Boolean {
-        return false
+        return mCallbacks?.changePageProc?.invoke(orientation, dir) ?: false
     }
 
     override fun hasNextPage(orientation: Orientation, dir: Direction): Boolean {
-        return false
+        return mCallbacks?.hasNextPageProc?.invoke(orientation,dir) ?: false
     }
 }
 
 /**
  * スクロール / ズーム操作をカプセル化するクラス
+ *
+ * parentView上に配置された、contentView に対して、
+ * ピンチ、スワイプ操作で、拡大(contentView.scaleX,scaleYを変更）・スクロール（contentView.translateX,translateYを変更）する
+ * スワイプによるページめくり（スクロール量が一定以上になったときに、changePageする）機能もサポートする。
+ * もともと、GestureInterpreterのすべてのタッチ操作を扱う汎用実装を目論んでUtManipulationAgentという抽象的な名前にしていたが、
+ * タップなどは、単に右から左に受け渡すだけの実装になって意味がないので、Scale/Scrollに特化した実装となった。
+ * UtZoomScroller程度の名前にしておけばよかったな。
+ *
+ * 使用方法
+ * 1. IUtManipulationTargetを実装（単純な拡大・スクロールだけならUtSimpleManipulationTargetで可）
+ * 2. parentView（または、その親ビュー）に UtGestureInterpreter をセット
+ * 3. UtGestureInterpreterの、onScroll/onScaleハンドラを、UtManipulationAgent#onScroll/onScale に接続
  */
 class UtManipulationAgent(private val targetViewInfo: IUtManipulationTarget) {
     private var minScale:Float = 1f
@@ -383,6 +420,15 @@ class UtManipulationAgent(private val targetViewInfo: IUtManipulationTarget) {
             translationX = 0f
             true
         } else false
+    }
+
+    /**
+     * UtGestureInterpreter#setup()でonScroll/onScaleイベントを接続する代わりに、
+     * このメソッドでまとめてセットしてもよい。
+     */
+    fun attachGestureInterpreter(lifecycleOwner: LifecycleOwner, interpreter: UtGestureInterpreter) {
+        interpreter.scrollListener.add(lifecycleOwner, this::onScroll)
+        interpreter.scaleListener.add(lifecycleOwner, this::onScale)
     }
 
     companion object {
