@@ -472,12 +472,6 @@ class MainActivity : AppCompatActivity(), IUtManipulationTarget {
             onLongTap {
                 showProperty()    //ロングタップで、プロパティ表示
             }
-            onFlickHorizontal { e->
-                when (e.direction) {
-                    Direction.Start -> previousPage()
-                    Direction.End -> nextPage()
-                }
-            }
             // onScroll / onScale を manipulationAgentに接続
             onScroll(manipulationAgent::onScroll)
             onScale(manipulationAgent::onScale)
@@ -486,9 +480,9 @@ class MainActivity : AppCompatActivity(), IUtManipulationTarget {
 }
 ```
 上の例では、説明のため MainActivity が IUtManipulationTarget を実装したが、UtSimpleManipulationTarget を使うと、次のように実装を簡素化できる。
-onCreate()の実装は同じだが、IUtManipulationTargetの実装のための、ごちゃごちゃしたプロパティやメソッドの実装をUtSimpleManipulationTargetに隠蔽できるので、可視性が向上する。
+サンプルプログラム app の、MainActivityでは、UtSimpleManipulationTargetを使って簡単なページングを実装している。
 ただし、アプリの構成により、ズーム操作の対象となるビューが動的に変わる場合、
-例えば、画像・ビデオ・テキストなどのコンテンツが切り替わる場合は、UtSimpleManipulationTargetは使えないので、その場合は、IUtManipulationTargetを実装する必要がある。
+例えば、画像・ビデオ・テキストなどのコンテンツによって、contentViewが切り替わる場合は、UtSimpleManipulationTargetは使えないので、その場合は、IUtManipulationTargetを実装する必要がある。
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -528,12 +522,6 @@ class MainActivity : AppCompatActivity() {
         }
         onLongTap {
           showProperty()    //ロングタップで、プロパティ表示
-        }
-        onFlickHorizontal { e->
-          when (e.direction) {
-            Direction.Start -> previousPage()
-            Direction.End -> nextPage()
-          }
         }
         // onScroll / onScale を manipulationAgentに接続
         onScroll(manipulationAgent::onScroll)

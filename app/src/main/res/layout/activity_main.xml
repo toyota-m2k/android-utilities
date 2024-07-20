@@ -21,6 +21,7 @@
             android:layout_height="match_parent"
             android:text="Hello World!"
             android:gravity="center"
+            android:textSize="40sp"
             />
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

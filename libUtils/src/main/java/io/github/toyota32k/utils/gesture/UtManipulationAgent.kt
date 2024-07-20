@@ -73,10 +73,16 @@ open class UtSimpleManipulationTarget(
  * 1. IUtManipulationTargetを実装（単純な拡大・スクロールだけならUtSimpleManipulationTargetで可）
  * 2. parentView（または、その親ビュー）に UtGestureInterpreter をセット
  * 3. UtGestureInterpreterの、onScroll/onScaleハンドラを、UtManipulationAgent#onScroll/onScale に接続
+ *
+ * @param   targetViewInfo  IUtManipulationTargetインスタンス（対象Viewに関する情報）
+ * @param   minScale        最小スケール（デフォルト: 1)
+ * @param   minScale        最大スケール（デフォルト: 10)
  */
-class UtManipulationAgent(private val targetViewInfo: IUtManipulationTarget) {
-    private var minScale:Float = 1f
-    private var maxScale:Float = 10f
+class UtManipulationAgent(
+    private val targetViewInfo: IUtManipulationTarget,
+    private val minScale:Float = 1f,
+    private val maxScale:Float = 10f,
+    ) {
 
     @Suppress("MemberVisibilityCanBePrivate")
     val contentView:View

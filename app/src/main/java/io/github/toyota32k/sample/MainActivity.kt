@@ -14,15 +14,17 @@ import io.github.toyota32k.shared.gesture.UtManipulationAgent
 import io.github.toyota32k.shared.gesture.UtSimpleManipulationTarget
 import io.github.toyota32k.utils.UtLog
 import java.util.EnumSet
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
+    // ビューモデルｗ
+    private var pageNo:Int = 1
+    private var maxPageNo:Int = 5
+
     // UtGestureInterpreter を作成
-    // この例では、
-    // - ダブルタップは処理しない（-->その分、シングルタップの判定が少し速い）
     // - UtManipulationAgentで使うので、scaleイベントも扱う
-    private val gestureInterpreter: UtGestureInterpreter by lazy { UtGestureInterpreter(applicationContext, enableScaleEvent = true, rapidTap = true) }
-    // UtManipulationAgent を作成
-    // この例では、MainActivity自体がIUtManipulationTargetを実装しているので、thisを引数に渡して構築。
+    private val gestureInterpreter: UtGestureInterpreter by lazy { UtGestureInterpreter(applicationContext, enableScaleEvent = true, rapidTap = false) }
+    // UtManipulationAgent を作成（UtSimpleManipulationTargetを使用）
     private val manipulationAgent: UtManipulationAgent by lazy { UtManipulationAgent(manipulationTarget/*IUtManipulationTargetインスタンス*/) }
 
     private val manipulationTarget: IUtManipulationTarget by lazy {
@@ -31,54 +33,77 @@ class MainActivity : AppCompatActivity() {
                 changePage { orientation, dir ->
                     // change page
                     when(dir) {
-                        Direction.Start -> nextPage()
-                        Direction.End -> previousPage()
+                        Direction.Start -> previousPage()
+                        Direction.End -> nextPage()
                     }
                     true
                 }
                 hasNextPage { orientation, dir ->
-                    true
+                    when(dir) {
+                        Direction.Start -> pageNo>1
+                        Direction.End -> pageNo<maxPageNo
+                    }
                 }
             }
     }
+
+    val containerView get() = findViewById<FrameLayout>(R.id.parent_view)
+    val targetView get() = findViewById<TextView>(R.id.content_view)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val containerView = findViewById<FrameLayout>(R.id.parent_view)
-        val targetView = findViewById<TextView>(R.id.content_view)
         gestureInterpreter.setup(this, containerView) {
             onTap {
-                edit()      // タップイベントで、テキストの編集モードを開始する
+                addPage()      // TAP to add a page.
             }
             onLongTap {
-                showProperty()    //ロングタップで、プロパティ表示
+                removePage()    // LongTAP to remove a page.
             }
-            onFlickHorizontal { e->
-                when (e.direction) {
-                    Direction.Start -> previousPage()
-                    Direction.End -> nextPage()
-                }
+            onDoubleTap {
+                manipulationAgent.resetScrollAndScale() // DoubleTAP to reset scroll position and scale.
             }
             // onScroll / onScale を manipulationAgentに接続
             onScroll(manipulationAgent::onScroll)
             onScale(manipulationAgent::onScale)
         }
+
+        updatePage()
+    }
+
+    private fun updatePage() {
+        targetView.text = "Page ${pageNo}/${maxPageNo}"
     }
 
     private val logger = UtLog("Sample")
-    private fun edit() {
+    private fun addPage() {
         logger.debug()
+        maxPageNo++
+        pageNo = maxPageNo
+        updatePage()
     }
-    private fun showProperty() {
+    private fun removePage() {
         logger.debug()
+        if(maxPageNo>1) {
+            maxPageNo--
+            pageNo = max(pageNo,maxPageNo)
+            updatePage()
+        }
     }
     private fun previousPage() {
         logger.debug()
+        if(pageNo>1) {
+            pageNo--
+            updatePage()
+        }
     }
     private fun nextPage() {
         logger.debug()
+        if(pageNo<maxPageNo) {
+            pageNo++
+            updatePage()
+        }
     }
 
 }
