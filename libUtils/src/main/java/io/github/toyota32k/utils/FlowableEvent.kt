@@ -8,6 +8,9 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * Flow (StateFlow) ベースのResetableEventクラス
+ *
+ * @param initial   false: 非シグナル状態で開始（デフォルト） / true: シグナル状態で開始
+ * @param autoReset false: 手動リセット（デフォルト）/ true: 自動リセット
  */
 class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
     private val flow = MutableStateFlow(initial)

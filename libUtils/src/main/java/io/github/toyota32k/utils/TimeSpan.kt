@@ -1,6 +1,9 @@
 package io.github.toyota32k.utils
 
+import kotlin.time.Duration
+
 class TimeSpan (private val ms : Long) {
+    constructor(duration:Duration) : this(duration.inWholeMilliseconds)
     val milliseconds: Long
         get() = ms % 1000
 

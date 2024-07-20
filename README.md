@@ -1,7 +1,15 @@
 # android-utilities
 
 さまざまなアプリで利用できる便利な機能を実装したライブラリです。
-Android 5 くらいの時代から少しずつ作っていたものなので、SDK がサポートして不要になったAPIなども含まれていますが、そのあたりはご愛敬。
+Android 5 くらいの時代から少しずつ作っていたものなので、SDK がサポートして不要になったり、時代遅れになったAPIもあります。
+そのうち整理整頓したい。。。
+
+## Install
+
+```gradle
+implementation("com.github.toyota-m2k:android-utility:Tag")
+```
+https://jitpack.io/#toyota-m2k/android-utilities
 
 ## ActivityExt
 
@@ -29,7 +37,7 @@ Activityなどのライフサイクルに依存しない ViewModel を作成す�
 ## Chronos
 
 時間計測クラス。関数の呼び出しからリターンするまでの時間を計測したり、個々の関数呼び出しの前後でラップ時間を記録したりできる。
-計測結果は UtLog に出力する。ラップタイムを記録するような場合は、Chronos クラスを単体で使うが、１つのブロックの時間を計るだけなら、UtLog#chronos() を使うのが簡単。
+計測結果は [UtLog](#utlog) に出力する。ラップタイムを記録するような場合は、Chronos クラスを単体で使うが、１つのブロックの時間を計るだけなら、UtLog#chronos() を使うのが簡単。
 
 #### 使用例
 ```Kotlin
@@ -48,7 +56,7 @@ fun takePicture(): Bitmap? {
 ## CollectionExt
 
 コレクション（Map, List）用の拡張関数。
-kotlinが標準でサポートするようになってきたので、もう使わない。　
+kotlinが標準でサポートするようになったので、もう使わない。　
 
 ## ConstantLiveData
 
@@ -60,23 +68,87 @@ LiveDataを要求するAPI ([android-binder](https://github.com/toyota-m2k/andro
 文字列 - 数値、などの双方向の型変換をサポートするLiveData型。
 bool値をView.visibility に変換して表示を切り替えるような単方向の変換であれば、map などのフィルターオペレータで十分だが、EditTextのtextプロパティと数値をバインドするような双方向変換で必要となる。
 
+## DisposableObserver
+
+LiveDataのデータ変化を監視可能なオブザーバークラス。LiveDataの拡張関数、disposableObserve()で生成する。
+LiveData の observe() は、Observerクラスを作らないといけないし、removeObserverするには、LiveDataとObserveの両方のインスタンスが必要で、ちょっと使いにくい。
+DisposableObserverは、IDisposable（≒Closeable）を継承しているので、dispose()を呼び出すことで、オブザーバーの登録解除が可能。
+LifecycleOwner（Activityなど）のライフサイクルに従って動作するので、次の例では、onDestroyで disposable.dispose() を呼ぶ必要はない。
+ただし、LiveData#disposableObserveForever() で作成したIDisposableは、onDestroyなどで解放しなければならない。
+
+```kotlin
+
+private lateinit var liveData:LiveData<Boolean>
+private var disposable:IDisposable? = null
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+    disposable = liveData.diposableObserve(this/*LifecycleOwner*/) {
+        if(it) {
+            // removeObserverするには、disposeを呼ぶだけで ok
+            disposable?.dispose()
+            disposable = null
+        }
+    }
+}
+
+```
+
+
 ## DisposableFlowObserver
 
 DisposableObserverのFlow版。
-Flowのデータ変化を監視可能なオブザーバークラス。
+Flowのデータ変化を監視可能なオブザーバークラス。Flowの拡張関数、disposeObserve() で生成する。
 IDisposable（≒Closeable）を継承しており、dispose()を呼び出すことで、オブザーバーの登録解除が可能。
+LifecycleOwner（Activityなど）のライフサイクルまたは、CoroutineScope内で動作するので、次の例では、onDestroyで disposable.dispose() を呼ぶ必要はない。
 
-## DisposableObserver
+```kotlin
 
-DisposableFlowObserverの LiveData版。
-LiveDataのデータ変化を監視可能なオブザーバークラス。
-IDisposable（≒Closeable）を継承しており、dispose()を呼び出すことで、オブザーバーの登録解除が可能。
+private lateinit var flow:Flow<Boolean>
+private var disposable:IDisposable? = null
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+    disposable = flow.diposableObserve(this/*LifecycleOwner*/) {
+        if(it) {
+          // removeObserverするには、disposeを呼ぶだけで ok
+          disposable?.dispose()
+          disposable = null
+        }
+    }
+}
+
+```
 
 ## Disposer
 
 IDisposableのコレクション。
 Disposerインスタンスを作って、IDisposableを登録(register または、`+` operator)しておけば、
 Disposer#dispose() メソッドで、まとめてdisposeできる。
+
+```kotlin
+
+private lateinit var dataA:LiveData<Boolean>
+private lateinit var dataB:LiveData<Int>
+private lateinit var dataC:LiveData<String>
+
+private val disposer = Disposer()
+
+override fun onCreate(savedInstanceState: Bundle?) {
+  super.onCreate(savedInstanceState)
+  setContentView(R.layout.activity_main)
+  disposer
+    .register(dataA.disposableObserveForever { updateA(it) })
+    .register(dataB.disposableObserveForever { updateB(it) })
+    .register(dataC.disposableObserveForever { updateC(it) })
+}
+override fun onDestroy() {
+    disposer.dispose()
+}
+```
+
 
 ## FlowableEvent
 
@@ -109,11 +181,11 @@ Closeable-->IDisposable変換用拡張関数
 
 .NET方面からの移住者にはおなじみのi/f。Java方面では、CloseableとかAutoCloseableとかが一般的だが、FlowやLiveDataは、Rx的な流儀で書くほうがしっくりくる（個人の感想です）。
 ただ、rxjava は導入したくないので、独自に定義した。
-
+asCloseable() / asDisposable() 拡張関数で、Closeable i/f  と相互変換可能。
 
 ## LifecycleDisposer
 
-ライフサイクルオーナーが破棄されるときに、自動的に dispose()を呼び出す、Disposer派生クラス。
+ライフサイクルオーナーが破棄されるときに、自動的に dispose()を呼び出す、[Disposer](#disposer)派生クラス。
 
 ## LifecycleOwnerHolder
 
@@ -175,6 +247,11 @@ LiveData#observeForever に相当するメソッドはないが、coroutineConte
 Observerの登録解除は、observe()の戻り値に対する dispose() でよいが、disposerにゴミが残るので、頻繁に解除するなら、clean()も呼んだ方がよいと思う。 
 removeObserver()を使えば、ゴミが残らず衛生的。
 
+ところで、Flow#disposableObserve()を直接呼ぶのと何が違うのか？
+[android-dialog](https://github.com/toyota-m2k/android-dialog)で、サブタスクの状態を流すflowに、ObservableFlowを使っている。
+disposableObserve() は、observeした側が責任をもってdisposeすることを期待しているのに対し、ObservableFlow は、observeされた側から一括強制解除できる点が異なる。
+タスク管理での利用シーンでは、タスク外からadhocにobserveしてきた（それぞれがちゃんとdisposeしてくれる保証がない）リスナーたちを、タスクが終了するときに確実に解除したいので、これを利用している。
+
 ## PackageUtil
 
 パッケージを扱う機能のユーティリティ。
@@ -204,14 +281,37 @@ object Settings {
 [LiveDataを生でイベントとして使うのはよくない](
 https://medium.com/androiddevelopers/lvedata-with-snackbar-navigation-and-other-events-the-singleliveevent-case-ac2622673150)
 で紹介されている SingleLiveEvent を参考に使いやすく再構成。
-ただし、利用実績はほとんどない。現在は、Listener / Callback クラスを使うか、
-[android-binder](https://github.com/toyota-m2k/android-binding) の Commandクラスを使っている。
+ただし、利用実績はほとんどない。現在は、Listener / Callback クラスか、
+[android-binder](https://github.com/toyota-m2k/android-binding) の Command系クラスを使っている。
 
 ## StateFlowConnector
 
 フローの出力を、他のMutableStateFlow の入力に接続する。
 通常はFlowを直接参照して、Rxオペレーターで操作すればよいのだが、２つの独立したViewModelで、
 それぞれ別々にMutableStateFlowがインスタンス化される場合に、片方の変化を、もう片方にコピーする、という用途で使用する。
+
+次の例では、ModelB#outputをModelA#inputに接続している。
+ModelAを、コンストラクタなどで、外から input:StateFlow&lt;Int> を渡すように修正できれば問題ないのだが、それぞれが別のライブラリで定義されていたりして、修正できない事案が発生したとき、こんな無理やりなクラスを作ったんだった。
+
+```kotlin
+    class ModelA {
+        val input = MutableStateFlow<Int>(0)
+    }
+    class ModelB {
+        val output = MutableStateFlow<Int>(0)
+    }
+    val modelA = ModelA()
+    val modelB = ModelB()
+
+    fun foo() {
+      modelB.output.connectTo(modelA.input).asCloseable().use {
+        for(i in 1..100) {
+          modelB.output.value = i
+          delay(1000)
+        }
+      }
+    }
+```
 
 ## SuspendableEvent
 
@@ -221,10 +321,25 @@ Kotlin Channel を使ったイベントクラス。
 ## TimeKeeper
 
 定期的な処理実行を汎用化したクラス。
+動画プレーヤーで、「再生を開始して、３秒間何も操作されなければ、コントロールパネルを非表示にする」という処理を書きたくて作ったクラス。
+単純な遅延実行やリピート実行などに適用可能。
 
+```kotlin
+val timeKeeper = TimeKeeper(lifecycleScope, "sample")
+var count = 0
+// 1秒に１回のペースで、doSomething()を100回呼び出します。
+timeKeeper.start(1000, pause=false, repeat=true) {
+    doSomething()
+    count++
+    if (count == 100)
+        timeKeeper.stop()
+    }
+}
+```
 ## TimeSpan
 
 ミリ秒で与えられた時間を、時・分・秒に分解、書式化するクラス。
+.NETのTimeSpanと名前は同じだが、こちらは、かなり低機能で、まったく別物。
 
 ## TintDrawable
 
@@ -252,7 +367,7 @@ awaitすると、complete が呼ばれるまでサスペンドする。
 
 MutableStateFlow を MutableLiveData として利用するための変換クラス
 
-- fun <T> MutableStateFlow<T>.asMutableLiveData(lifecycleOwner: LifecycleOwner): MutableLiveData<T>
+- fun &lt;T> MutableStateFlow&lt;T>.asMutableLiveData(lifecycleOwner: LifecycleOwner): MutableLiveData&lt;T>
 
 
 ## UtObservableCounter
@@ -271,37 +386,24 @@ trySetIfNot(), withFlagIfNot()を使うことで、普通のフラグ的にも�
 ViewModelにおいて、監視可能なプロパティの実装にMutableStateFlowを使うが、Viewからは値を参照（画面に表示）するだけで、値の変更はViewModel内の処理でのみ行う、というケースも多い。
 このような場合、MutableStateFlowを public に晒すのは気持ち悪くないですか？
 
-そこで、外向きには、StatusFlow としてプロパティを公開しつつ、内部的には、MutableStateFlowとして扱うことを実現する。
+そこで、外向きには、StateFlow としてプロパティを公開しつつ、内部的には、MutableStateFlowとして扱うことを実現する。
 - この仕組みを使いたいクラス（ViewModel派生クラスなど）を、IUtPropOwner派生にする。
-- プロパティは、val prop:StateFlow<T> = MutableStateFlow<T>() のように実装する。
+- プロパティは、val prop:StateFlow&lt;T> = MutableStateFlow&lt;T>() のように実装する。
 - プロパティの値を変更するときは、そのクラス内から、prop.mutable.value に値をセットする。
 
-#### 使用例
 ```kotlin
-class HogeViewModel: ViewModel(), IFlowPropertyHost {
-  val isBusy:StateFlow<Boolean> = MutableStateFlow(false)
-
-  fun setBusy(busy:Boolean) {
-    isBusy.mutable.value = busy       // <---!!!
-  }
-}
-
-class HogeActivity {
-  lateinit var viewModel:HogeViewModel
-
-  fun doSomething() {
-   if(viewModel.isBusy.value) return
-   // viewModel.isBusy.value = true     // error (the property of "isBusy" is immutable.)
-   viewModel.setBusy(true) {
-     try {
-       // do something
-     } finally {
-       viewModel.setBusy(false)
-     }
-   }
-  }
+class Some : IUtPropOwner {
+    // 外部から、someProperty は、リードオンリーな StateFlow<String> に見える
+    public val someProperty:StateFlow<String> = MutableStateFlow("initial")
+  
+    fun update(msg: String) {
+        // 内部からは、someProperty.mutable で、MutableStateFlowとして値を変更できる
+        someProperty.mutable.value = "${Date()} $msg"
+    }
+  
 }
 ```
+
 ちなみに、mutable プロパティは、単に StateFlowの拡張プロパティなので、グローバルに宣言してしまうことも可能なのだが、
 さすがにそれは気が引けるので、IUtPropOwner i/f 内に隠蔽し、これを使いたいクラスで、このi/f を継承するルールにしてみた。
 当然、IUtPropOwnerを継承するクラスからは、(Mutableでない) StateFlow にも mutable プロパティが生えてしまい、
@@ -321,8 +423,8 @@ lateinit的に（nullチェックなしに）使え、かつ、未初期化状�
 - interface IUtResetableValue&lt;T><br>リセット可能なlateinit的クラスのi/f定義
 - class UtResetableValue&lt;T><br>最も基本的なクラス。単純にset/get/resetする。
 - class UtLazyResetableValue&lt;T>(val fn:()->T)<br>値が要求されたときに初期化するlazy的動作の本命クラス。
-- class UtResetableFlowValue&lt;T>(private val flow: MutableStateFlow&lt;T?><br>値を保持するためにMutableStateFlowを使い、Flow<T?> として扱える値クラス。Flow i/f は、T? (nullable)となる点はご愛敬。
-- class UtNullableResetableValue&lt;T>(private val allowKeepNull:Boolean=false, private val lazy:(()->T?)?=null) <br>IUtResetableValueの本来の目的を完全に見失い、nullも保持できるようにしてしまったクラス。なぜ作ったか忘れてしまったが、無駄なインスタンス化を避け、lazy的に必要なときにだけインスタンスを作りたい、という場合に使ったんじゃないかと思う。
+- class UtResetableFlowValue&lt;T>(private val flow: MutableStateFlow&lt;T?><br>値を保持するためにMutableStateFlowを使い、Flow&lt;T?> として扱える値クラス。Flow i/f 経由で値を監視するときは、resetされた状態をnullで表すため、Flow&lt;T?> (nullable)となるのは致し方なし。
+- class UtNullableResetableValue&lt;T>(private val allowKeepNull:Boolean=false, private val lazy:(()->T?)?=null) <br>nullチェックなしで使え、かつ再初期化可能な値を保持する、というIUtResetableValueの本来の目的を完全に見失い、nullも保持できるようにしてしまったクラス。なぜ作ったか忘れてしまったが、無駄なインスタンス化を避け、lazy的に必要なときにだけインスタンスを作りたい、という場合に使ったんじゃないかと思う。
 - class UtManualIncarnateResetableValue&lt;T>(private val onIncarnate:()->T, private val onReset:((T)->Unit)?)<br>UtLazyResetableValueの亜種だが、一旦リセットされると、incarnate() を呼ばない限り、valueを参照で、勝手に蘇生しない、こじらせ度maxなクラス。何に使ったんだっけ？？？
 
 ## UtSortedList

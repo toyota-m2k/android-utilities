@@ -85,7 +85,7 @@ class UtLazyResetableValue<T>(val fn:()->T): IUtResetableValue<T>  {
 
 /**
  * 値を保持するためにMutableStateFlowを使い、Flow<T?> として扱える値クラス。
- * Flow i/f は、T? (nullable)となる点はご愛敬。
+ * Flow i/f 経由で値を監視するときは、resetされた状態をnullで表すため、Flow<T?> (nullable)となるのは致し方なし。
  */
 class UtResetableFlowValue<T>(private val flow: MutableStateFlow<T?> = MutableStateFlow(null)): IUtResetableValue<T>, Flow<T?> by flow {
     override var value:T

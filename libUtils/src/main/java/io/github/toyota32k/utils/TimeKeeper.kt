@@ -12,6 +12,11 @@ import kotlin.time.DurationUnit
 
 /**
  * タイムアウトを監視するクラス
+ *
+ * val timeKeeper = TimeKeeper(lifecycleScope, "sample")
+ * timeKeeper.start(1000, pause=false, repeat=true) {
+ *    doSomething()
+ * }
  */
 class TimeKeeper(ownerContext: CoroutineContext, private val nameForDebug:String) {
     constructor(ownerScope: CoroutineScope, nameForDebug: String) : this(ownerScope.coroutineContext, nameForDebug)
