@@ -1,11 +1,10 @@
 package io.github.toyota32k.sample
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import io.github.toyota32k.sample.R
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import io.github.toyota32k.shared.gesture.Direction
 import io.github.toyota32k.shared.gesture.IUtManipulationTarget
 import io.github.toyota32k.shared.gesture.Orientation
@@ -13,6 +12,7 @@ import io.github.toyota32k.shared.gesture.UtGestureInterpreter
 import io.github.toyota32k.shared.gesture.UtManipulationAgent
 import io.github.toyota32k.shared.gesture.UtSimpleManipulationTarget
 import io.github.toyota32k.utils.UtLog
+import kotlinx.coroutines.launch
 import java.util.EnumSet
 import kotlin.math.max
 
@@ -76,12 +76,16 @@ class MainActivity : AppCompatActivity() {
         targetView.text = "Page ${pageNo}/${maxPageNo}"
     }
 
+
     private val logger = UtLog("Sample")
+
     private fun addPage() {
-        logger.debug()
-        maxPageNo++
-        pageNo = maxPageNo
-        updatePage()
+        lifecycleScope.launch {
+            logger.debug()
+            maxPageNo++
+            pageNo = maxPageNo
+            updatePage()
+        }
     }
     private fun removePage() {
         logger.debug()
