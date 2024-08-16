@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package io.github.toyota32k.utils
 
 import android.content.pm.ActivityInfo
@@ -56,10 +58,10 @@ fun FragmentActivity.setOrientation(orientation:ActivityOrientation) {
     requestedOrientation = orientation.value
 }
 
-class ActivityOptions(
-    private var showActionBar:Boolean? = null,              // nullなら現状の値を変更しない
-    private var showStatusBar:Boolean? = null,
-    private var requestedOrientation:ActivityOrientation? = null
+data class ActivityOptions(
+    private val showActionBar:Boolean? = null,              // nullなら現状の値を変更しない
+    private val showStatusBar:Boolean? = null,
+    private val requestedOrientation:ActivityOrientation? = null
 ) {
     fun apply(activity: FragmentActivity) {
         showActionBar?.also { show ->
@@ -78,9 +80,9 @@ class ActivityOptions(
     companion object {
         fun actionBar(showActionBar: Boolean, orientation: ActivityOrientation?=null):ActivityOptions
                 = ActivityOptions(showActionBar, null, orientation)
-        fun statusBar(showStatusBar: Boolean, orientation: ActivityOrientation):ActivityOptions
+        fun statusBar(showStatusBar: Boolean, orientation: ActivityOrientation?=null):ActivityOptions
                 = ActivityOptions(null, showStatusBar, orientation)
-        fun actionAndStatusBar(showActionBar: Boolean, showStatusBar: Boolean, orientation: ActivityOrientation):ActivityOptions
+        fun actionAndStatusBar(showActionBar: Boolean, showStatusBar: Boolean, orientation: ActivityOrientation?=null):ActivityOptions
                 = ActivityOptions(showActionBar, showStatusBar, orientation)
     }
 }

@@ -13,7 +13,9 @@ https://jitpack.io/#toyota-m2k/android-utilities
 
 ## ActivityExt
 
-ステータスバー、アクションバーの表示・非表示を切り替えるための拡張関数を提供します。
+Activityの状態を設定するための拡張関数を定義しています。
+
+### ステータスバー、アクションバーの表示・非表示を切り替える。
 
 - fun FragmentActivity.hideStatusBar()
 - fun FragmentActivity.showStatusBar()
@@ -22,6 +24,18 @@ https://jitpack.io/#toyota-m2k/android-utilities
 - fun AppCompatActivity.hideActionBar()
 - fun AppCompatActivity.showActionBar()
 - fun AppCompatActivity.showActionBar(flag:Boolean)
+
+### ActivityのOrientationを設定する。
+
+- fun FragmentActivity.setOrientation(orientation:ActivityOrientation)
+
+また、`ActivityOptions` クラスを使えば、これらを組み合わせた状態を宣言的に定義して、簡単に切り替えることができます。
+```kotlin
+  ActivityOptions.actionAndStatusBar(showActionBar=false, showStatusBar=false).apply(this@MainActivity)
+```
+
+さらに、[android-binding の activityOptionsBinding](https://github.com/toyota-m2k/android-binding/blob/main/libBinder/src/main/java/io/github/toyota32k/binder/ActivityBinding.kt)を使えば、
+ビューモデル(Flow<ActivityOptions>)にバインドしてリアクティブにこれらの状態を更新することができます。
 
 ## ApplicationViewModelStoreOwner
 
@@ -61,7 +75,7 @@ kotlinが標準でサポートするようになったので、もう使わな�
 ## ConstantLiveData
 
 値が変化しないLiveDataクラス。
-LiveDataを要求するAPI ([android-binder](https://github.com/toyota-m2k/android-binding) など)を統一的に扱えるようにする。
+LiveDataを要求するAPI ([android-binding](https://github.com/toyota-m2k/android-binding) など)を統一的に扱えるようにする。
 
 ## ConvertLiveData
 
@@ -282,7 +296,7 @@ object Settings {
 https://medium.com/androiddevelopers/lvedata-with-snackbar-navigation-and-other-events-the-singleliveevent-case-ac2622673150)
 で紹介されている SingleLiveEvent を参考に使いやすく再構成。
 ただし、利用実績はほとんどない。現在は、Listener / Callback クラスか、
-[android-binder](https://github.com/toyota-m2k/android-binding) の Command系クラスを使っている。
+[android-binding](https://github.com/toyota-m2k/android-binding) の Command系クラスを使っている。
 
 ## StateFlowConnector
 
