@@ -8,9 +8,9 @@ import androidx.lifecycle.MutableLiveData
  * Mutableでないなら、Filterで十分なのだけど、双方向リンクに使うために実装した。
  */
 class ConvertLiveData<R,C>(
-    val source: MutableLiveData<R?>,
-    val convert:(R?)->C?,
-    val invert:(C?)->R?)
+    val source: MutableLiveData<R>,
+    val convert:(R)->C,
+    val invert:(C)->R)
     : MediatorLiveData<C>() {
 
     init {
@@ -18,7 +18,7 @@ class ConvertLiveData<R,C>(
             // Sourceの値が変化したときに呼ばれる
             val c = convert(it)
             if(value!=c) {
-                value = c
+                setValue(c)
             }
         }
     }
@@ -30,7 +30,7 @@ class ConvertLiveData<R,C>(
 //        return c
 //    }
 
-    override fun setValue(value: C?) {
+    override fun setValue(value: C) {
         super.setValue(value)
         val r = invert(value)
         if(source.value != r) {
