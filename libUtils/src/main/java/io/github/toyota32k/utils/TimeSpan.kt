@@ -21,7 +21,7 @@ class TimeSpan (ms:Long) {
     fun formatM(format:String="%02d'%02d\"") : String {
         return String.format(Locale.US, format, minutes, seconds)
     }
-    fun formatMm(format:String="%02d\"%02d\"%03d") : String {
+    fun formatMm(format:String="%02d'%02d\"%03d") : String {
         return String.format(Locale.US, format, minutes, seconds, milliseconds)
     }
     fun formatS(format:String="%02d\"%02d") : String {
