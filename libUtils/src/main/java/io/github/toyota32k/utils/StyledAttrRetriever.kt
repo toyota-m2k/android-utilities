@@ -14,6 +14,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.StyleRes
 import androidx.annotation.StyleableRes
 import androidx.core.content.res.getColorOrThrow
+import kotlin.math.roundToInt
 
 /**
  * StyledAttributeのラッパークラス
@@ -25,7 +26,7 @@ import androidx.core.content.res.getColorOrThrow
  *  sar.getColor(...)
  * }
  */
-class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoCloseable {
+class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibilityCanBePrivate") val sa: TypedArray) : AutoCloseable {
     constructor(context: Context, attrs: AttributeSet?, @StyleableRes attrRes: IntArray, @AttrRes defStyleAttr: Int, @StyleRes defStyleRes:Int)
             : this(context, context.theme.obtainStyledAttributes(attrs, attrRes, defStyleAttr, defStyleRes))
 
@@ -81,14 +82,18 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
         return try {
             sa.getColorOrThrow(attrId)
         } catch (e: Throwable) {
-            if(context.theme.resolveAttribute(themeAttrId, typedValue, true)) {
+            (if(context.theme.resolveAttribute(themeAttrId, typedValue, true)) {
                 typedValue.data
             } else if(fallbackThemeAttrRes!=0 && context.theme.resolveAttribute(fallbackThemeAttrRes, typedValue, true)) {
                 typedValue.data
             } else {
                 def
-            }.withAlpha(alpha)
+            }).withAlpha(alpha)
         }
+    }
+    @ColorInt
+    fun getColorWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int, alpha: Float): Int {
+        return getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, (alpha*255).roundToInt())
     }
     /**
      * カスタム属性(attrId) --> テーマ色(Material3推奨) --> 第２希望（Material2 など） --> デフォルト色 の順に利用可能な色を取得する
@@ -104,6 +109,10 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
     fun getColorWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Int): Int {
         return getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha)
     }
+    @ColorInt
+    fun getColorWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Float): Int {
+        return getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha)
+    }
 
 
     /**
@@ -115,10 +124,9 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
      * @param themeAttrId テーマ色(Material3推奨) ... attrId の色が定義されていない場合に使用
      * @param fallbackThemeAttrRes 第２希望（Material2 など）... Material3 の色が定義されていない場合に使用
      * @param def  上記のどれも取得できない場合に使われる色（ちゃんと作りこんでいたら、これは使われないはず）
-     * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawable(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int): Drawable {
-        return sa.getDrawable(attrId) ?: getColor(attrId, themeAttrId, fallbackThemeAttrRes, def).let { ColorDrawable(it) }
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColor(attrId, themeAttrId, fallbackThemeAttrRes, def))
     }
 
     /**
@@ -130,10 +138,9 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
      * @param attrId カスタム属性(attrs.xmlで、declare-styleable によって定義された attr id)
      * @param themeAttrId テーマ色(Material3推奨) ... attrId の色が定義されていない場合に使用
      * @param def  上記のどれも取得できない場合に使われる色（ちゃんと作りこんでいたら、これは使われないはず）
-     * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawable(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int): Drawable {
-        return sa.getDrawable(attrId) ?: getColor(attrId, themeAttrId, 0, def).let { ColorDrawable(it) }
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColor(attrId, themeAttrId, 0, def))
     }
 
     /**
@@ -156,8 +163,12 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
      * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int, alpha: Int): Drawable {
-        return sa.getDrawable(attrId) ?: getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, alpha).let { ColorDrawable(it) }
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, alpha))
     }
+    fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int, alpha: Float): Drawable {
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, alpha))
+    }
+
     /**
      * Drawableを取得する。（background属性など、Drawable / color のどちらでも受け取れる属性の取得に使う。
      * - カスタム属性が Drawableなら、それを返す。
@@ -171,7 +182,10 @@ class StyledAttrRetriever(val context: Context, val sa: TypedArray) : AutoClosea
      * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Int): Drawable {
-        return sa.getDrawable(attrId) ?: getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha).let { ColorDrawable(it) }
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha))
+    }
+    fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Float): Drawable {
+        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha))
     }
 
     data class DP(val v:Int):IDimension {
