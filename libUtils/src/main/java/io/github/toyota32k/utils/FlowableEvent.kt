@@ -1,10 +1,13 @@
 package io.github.toyota32k.utils
 
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
 
 /**
  * Flow (StateFlow) ベースのResetableEventクラス
@@ -14,33 +17,47 @@ import kotlinx.coroutines.sync.withLock
  */
 class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
     private val flow = MutableStateFlow(initial)
-    private val mutex = Mutex()
 
     suspend fun set() {
-        mutex.withLock {
-            flow.value = true
-        }
+        flow.value = true
     }
     suspend fun reset() {
-        mutex.withLock {
-            flow.value = false
-        }
+        flow.value = false
     }
     suspend fun waitOne() {
-        while(true) {
-            mutex.withLock {
-                if (flow.value) {
-                    if (autoReset) {
-                        flow.value = false
-                    }
-                    return  // waitOne
-                }
+        flow.filter { it }.first()
+        if (autoReset) {
+            if (flow.value) {
+                flow.value = false
             }
-            flow.filter { it }.first()
         }
+    }
+
+    suspend fun waitOne(timeout:Long):Boolean {
+        return try {
+            withTimeout(timeout) {
+                waitOne()
+                true
+            }
+        } catch(e: TimeoutCancellationException) {
+            false
+        }
+    }
+    suspend fun waitOne(timeout:Duration):Boolean {
+        return waitOne(timeout.inWholeMilliseconds.coerceAtLeast(1))
     }
     suspend fun <T> withLock(fn:()->T):T {
         waitOne()
         return fn()
+    }
+    suspend fun <T> withLock(timeout:Long, defOnTimeot:T, fn:()->T):T {
+        if(waitOne(timeout)) {
+            return fn()
+        } else {
+            return defOnTimeot
+        }
+    }
+    suspend fun <T> withLock(timeout:Duration, defOnTimeot:T, fn:()->T):T {
+        return withLock(timeout.inWholeMilliseconds.coerceAtLeast(1), defOnTimeot, fn)
     }
 }
