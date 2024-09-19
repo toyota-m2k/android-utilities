@@ -17,6 +17,7 @@ import kotlin.time.Duration
  */
 class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
     private val flow = MutableStateFlow(initial)
+    private val mutex = Mutex()
 
     suspend fun set() {
         flow.value = true
@@ -25,9 +26,13 @@ class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
         flow.value = false
     }
     suspend fun waitOne() {
-        flow.filter { it }.first()
-        if (autoReset) {
-            if (flow.value) {
+        if(!autoReset) {
+            // manual reset の場合は、単に flowに trueが入るのを待つだけで ok
+            flow.filter { it }.first()
+        } else {
+            // auto reset の場合は、first()を待つ呼び出しを１つに限定するため、mutexで待たせる。
+            mutex.withLock {
+                flow.filter { it }.first()
                 flow.value = false
             }
         }
