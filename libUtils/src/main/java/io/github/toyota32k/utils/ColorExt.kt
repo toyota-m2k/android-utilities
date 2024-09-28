@@ -21,6 +21,10 @@ data class RGB(val r:Int, val g:Int, val b:Int, val a:Int) {
             255
         )
     }
+    fun grayScale() : RGB {
+        val g = (0.2126 * r + 0.7152 * g + 0.0722 * b).toInt()
+        return RGB(g, g, g, a)
+    }
 
     companion object {
         fun opaque(@ColorInt rgba: Int) : RGB {
@@ -56,6 +60,15 @@ data class RGB(val r:Int, val g:Int, val b:Int, val a:Int) {
         @ColorInt
         fun brend(rgba1:Long, rgba2:Long) : Int {
             return RGB(rgba1).brend(RGB(rgba2)).toColor()
+        }
+
+        @ColorInt
+        fun grayScale(@ColorInt rgba:Int) : Int {
+            return RGB(rgba).grayScale().toColor()
+        }
+        @ColorInt
+        fun grayScale(rgba:Long) : Int {
+            return RGB(rgba).grayScale().toColor()
         }
     }
 }
