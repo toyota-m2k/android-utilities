@@ -1,21 +1,21 @@
 [versions]
 #plugins
-kotlin = "2.0.20"
-agp = "8.7.0"
+kotlin = "2.0.21"
+agp = "8.7.2"
 
 #libraries
 core = "1.6.1"
 coreTesting = "2.2.0"
-core-ktx = "1.13.1"
+core-ktx = "1.15.0"
 appcompat = "1.7.0"
 kotlinxCoroutinesTest = "1.9.0"
 lifecycleExtensions = "2.2.0"
 material = "1.12.0"
-constraintlayout = "2.1.4"
+constraintlayout = "2.2.0"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleKtx = "2.8.6"
+lifecycleKtx = "2.8.7"
 mockitoInline = "5.2.0"
 mockitoKotlin = "2.2.0"
 preferenceKtx = "1.2.1"
