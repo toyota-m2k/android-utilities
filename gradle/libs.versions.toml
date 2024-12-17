@@ -20,11 +20,14 @@ mockitoInline = "5.2.0"
 mockitoKotlin = "2.2.0"
 preferenceKtx = "1.2.1"
 robolectric = "4.11.1"
+work = "2.10.0"
 
 [libraries]
 core = { module = "androidx.test:core", version.ref = "core" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
