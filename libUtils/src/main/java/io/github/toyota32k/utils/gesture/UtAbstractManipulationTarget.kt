@@ -1,8 +1,5 @@
-package io.github.toyota32k.lib.player.gesture
+package io.github.toyota32k.utils.gesture
 
-import io.github.toyota32k.shared.gesture.Direction
-import io.github.toyota32k.shared.gesture.IUtManipulationTarget
-import io.github.toyota32k.shared.gesture.Orientation
 import java.util.EnumSet
 
 /**

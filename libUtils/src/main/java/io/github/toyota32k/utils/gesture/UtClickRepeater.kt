@@ -1,4 +1,4 @@
-package io.github.toyota32k.shared.gesture
+package io.github.toyota32k.utils.gesture
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent

@@ -1,12 +1,9 @@
-package io.github.toyota32k.lib.player.gesture
+package io.github.toyota32k.utils.gesture
 
 import android.content.Context
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
-import io.github.toyota32k.shared.gesture.IUtManipulationTarget
-import io.github.toyota32k.shared.gesture.UtGestureInterpreter
-import io.github.toyota32k.shared.gesture.UtGestureInterpreter.IListenerBuilder
-import io.github.toyota32k.shared.gesture.UtManipulationAgent
+import io.github.toyota32k.utils.gesture.UtGestureInterpreter.IListenerBuilder
 
 /**
  * ピンチによるズーム操作を簡単に実現するために、

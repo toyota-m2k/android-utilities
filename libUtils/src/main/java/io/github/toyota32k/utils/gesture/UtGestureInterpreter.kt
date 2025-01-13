@@ -1,9 +1,8 @@
-package io.github.toyota32k.shared.gesture
+package io.github.toyota32k.utils.gesture
 
 import android.content.Context
 import android.graphics.PointF
 import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -388,7 +387,7 @@ class UtGestureInterpreter(
         return v?.performClick() == true
     }
 
-    private inner class SwipeGestureListener : SimpleOnGestureListener() {
+    private inner class SwipeGestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent): Boolean {
             logger.debug(GI_LOG) {"$e"}
             return false
