@@ -192,8 +192,16 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
         override fun div(v: Int): IDimension {
             return DP(this.v / v)
         }
+
+        override fun div(v: Float): IDimension {
+            return DP((this.v.toFloat() / v).roundToInt())
+        }
         override fun times(v: Int): IDimension {
             return DP(this.v * v)
+        }
+
+        override fun times(v: Float): IDimension {
+            return DP((this.v.toFloat() * v).roundToInt())
         }
         override fun dp(context: Context):Int {
             return v
@@ -201,13 +209,28 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
         override fun px(context: Context):Int {
             return context.dp2px(v)
         }
+        fun PX(context: Context):PX {
+            return PX(dp(context))
+        }
+        operator fun plus(v: DP): DP {
+            return DP(this.v + v.v)
+        }
+        operator fun minus(v: DP): DP {
+            return DP(this.v - v.v)
+        }
     }
     data class PX(val v:Int):IDimension {
         override fun div(v: Int): IDimension {
             return PX(this.v / v)
         }
+        override fun div(v: Float): IDimension {
+            return PX((this.v.toFloat()/v).roundToInt())
+        }
         override fun times(v: Int): IDimension {
             return PX(this.v * v)
+        }
+        override fun times(v: Float): IDimension {
+            return PX((this.v.toFloat() * v).roundToInt())
         }
         override fun dp(context: Context):Int {
             return context.px2dp(v)
@@ -215,6 +238,16 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
         override fun px(context: Context):Int {
             return v
         }
+        fun DP(context: Context):DP {
+            return DP(dp(context))
+        }
+        operator fun plus(v: PX): PX {
+            return PX(this.v + v.v)
+        }
+        operator fun minus(v: PX): PX {
+            return PX(this.v - v.v)
+        }
+
     }
 
     /**
@@ -240,7 +273,9 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
  */
 interface IDimension {
     operator fun div(v:Int):IDimension
+    operator fun div(v:Float): IDimension
     operator fun times(v:Int):IDimension
+    operator fun times(v:Float): IDimension
     operator fun unaryMinus():IDimension = times(-1)
     fun dp(context: Context) : Int
     fun px(context: Context) : Int
