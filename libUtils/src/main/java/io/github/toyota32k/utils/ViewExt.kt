@@ -99,6 +99,21 @@ fun Context.px2dp(px:Int) : Int {
     return px2dp(px.toFloat()).toInt()
 }
 
+/**
+ * 例外をスローしない getString()
+ */
+fun Context.getStringOrNull(id:Int) : String? {
+    return try {
+        getString(id)
+    } catch (e: Throwable) {
+        null
+    }
+}
+
+fun Context.getStringOrDefault(int: Int, default: String): String {
+    return getStringOrNull(int) ?: default
+}
+
 
 /**
  * View の layoutParams に widthを設定する
