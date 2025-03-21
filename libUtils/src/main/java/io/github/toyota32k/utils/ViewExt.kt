@@ -10,6 +10,7 @@ import android.util.Size
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
+import androidx.annotation.StringRes
 import androidx.core.view.children
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
@@ -102,7 +103,7 @@ fun Context.px2dp(px:Int) : Int {
 /**
  * 例外をスローしない getString()
  */
-fun Context.getStringOrNull(id:Int) : String? {
+fun Context.getStringOrNull(@StringRes id:Int) : String? {
     return try {
         getString(id)
     } catch (e: Throwable) {
@@ -110,7 +111,7 @@ fun Context.getStringOrNull(id:Int) : String? {
     }
 }
 
-fun Context.getStringOrDefault(int: Int, default: String): String {
+fun Context.getStringOrDefault(@StringRes int: Int, default: String): String {
     return getStringOrNull(int) ?: default
 }
 

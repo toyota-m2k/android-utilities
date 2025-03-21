@@ -4,10 +4,16 @@ package io.github.toyota32k.utils
 
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
+
+fun FragmentActivity.isStatusBarVisible(): Boolean {
+    val controller = WindowCompat.getInsetsController(window, window.decorView)
+    return controller.systemBarsBehavior != WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+}
 
 fun FragmentActivity.hideStatusBar() {
     WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -32,6 +38,11 @@ fun FragmentActivity.showStatusBar(flag:Boolean) {
         hideStatusBar()
     }
 }
+
+fun AppCompatActivity.isActionBarVisible(): Boolean {
+    return supportActionBar?.isShowing ?: false
+}
+
 fun AppCompatActivity.hideActionBar() {
     supportActionBar?.hide()
 }
