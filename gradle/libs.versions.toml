@@ -6,7 +6,7 @@ agp = "8.9.1"
 #libraries
 core = "1.6.1"
 coreTesting = "2.2.0"
-core-ktx = "1.15.0"
+core-ktx = "1.16.0"
 appcompat = "1.7.0"
 kotlinxCoroutinesTest = "1.10.1"
 lifecycleExtensions = "2.2.0"

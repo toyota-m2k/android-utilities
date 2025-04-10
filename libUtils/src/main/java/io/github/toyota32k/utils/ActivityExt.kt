@@ -15,8 +15,12 @@ fun FragmentActivity.isStatusBarVisible(): Boolean {
     return controller.systemBarsBehavior != WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 }
 
+fun FragmentActivity.fitSystemWindows(fit:Boolean) {
+    WindowCompat.setDecorFitsSystemWindows(window, fit)
+}
+
 fun FragmentActivity.hideStatusBar() {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+//    WindowCompat.setDecorFitsSystemWindows(window, false)
     WindowInsetsControllerCompat(window, window.decorView.rootView).let { controller ->
         controller.hide(WindowInsetsCompat.Type.systemBars())
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -24,7 +28,7 @@ fun FragmentActivity.hideStatusBar() {
 }
 
 fun FragmentActivity.showStatusBar() {
-    WindowCompat.setDecorFitsSystemWindows(window, true)
+//    WindowCompat.setDecorFitsSystemWindows(window, true)
     WindowInsetsControllerCompat(window, window.decorView.rootView).let { controller ->
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
         controller.show(WindowInsetsCompat.Type.systemBars())
