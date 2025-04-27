@@ -8,7 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 /**
  * LifecycleOwnerを、その生存期間だけ安全に保持するクラス
  */
-class LifecycleOwnerHolder(owner: LifecycleOwner?=null, onDestroyed:(()->Unit)?=null) : LifecycleEventObserver, IDisposableEx {
+open class LifecycleOwnerHolder(owner: LifecycleOwner?=null, onDestroyed:(()->Unit)?=null) : LifecycleEventObserver, IDisposableEx {
     private var destroyedCallback:(()->Unit)? = onDestroyed
 
     var lifecycleOwner:LifecycleOwner? = null

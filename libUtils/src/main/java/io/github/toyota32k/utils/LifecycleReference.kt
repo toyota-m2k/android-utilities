@@ -9,4 +9,7 @@ class LifecycleReference<T>(v:T?, owner:LifecycleOwner, val onDestroyed:((T)->Un
         value?.apply { onDestroyed?.invoke(this) }
         value = null
     }
+    fun reset() {
+        holder.dispose()
+    }
 }
