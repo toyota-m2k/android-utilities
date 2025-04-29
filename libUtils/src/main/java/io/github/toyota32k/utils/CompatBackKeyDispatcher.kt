@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleOwner
  * 両方の機能性のANDになるので、当然できることは減るが「とりあえず移行したい」用途には便利なのでは？
  */
 class CompatBackKeyDispatcher(
-    private val useInvokedDispatcher:Boolean=true,
     private var onBackInvokedDispatcherPriority:Int = 0) {
     private var onBackInvokedCallback: AutoDisposalOnBackInvokedDispatcher? = null
     private var onBackPressedCallback: OnBackPressedCallback? = null
@@ -30,22 +29,24 @@ class CompatBackKeyDispatcher(
      * @param callback Back Key 押下時のコールバック
      */
     fun register(activity: ComponentActivity, lifecycleOwner:LifecycleOwner, callback: () -> Unit) {
-        if (useInvokedDispatcher && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
+            // Android 14以降: onBackInvokedDispatcherを使用
             onBackInvokedCallback = AutoDisposalOnBackInvokedDispatcher().apply {
                 register(onBackInvokedDispatcherPriority, activity, lifecycleOwner) {
                     callback()
                 }
             }
-        } else {
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    callback()
-                    isEnabled = false
-                }
-            }.apply {
-                onBackPressedCallback = this
-                activity.onBackPressedDispatcher.addCallback(lifecycleOwner, this)
+        }
+        // Android 13以前、または enableOnBackInvokedCallback="false" の場合は onBackPressedDispatcherを使用
+        // どちらのコールバックが呼ばれるかは OSに任せる
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                callback()
+                isEnabled = false
             }
+        }.apply {
+            onBackPressedCallback = this
+            activity.onBackPressedDispatcher.addCallback(lifecycleOwner, this)
         }
     }
 
