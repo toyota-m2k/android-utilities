@@ -1,7 +1,7 @@
 [versions]
 #plugins
-kotlin = "2.1.20"
-agp = "8.9.2"
+kotlin = "2.1.21"
+agp = "8.10.0"
 
 #libraries
 core = "1.6.1"
@@ -17,7 +17,7 @@ constraintlayout = "2.2.1"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleKtx = "2.8.7"
+lifecycleKtx = "2.9.0"
 mockitoInline = "5.2.0"
 mockitoKotlin = "2.2.0"
 preferenceKtx = "1.2.1"

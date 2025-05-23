@@ -42,7 +42,11 @@ class CompatBackKeyDispatcher(
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 callback()
-                isEnabled = false
+//                isEnabled = false
+                // isEnabled = false にすると、handleOnBackPressed()が呼ばれなくなる。
+                // API的には、例えば、callback()が false を返したら isEnable = false にする、というのが普通だが、
+                // onBackInvokedDispatcherの callback()とシグネチャを共通化する必要があるので、isEnabled は使用しないことにする。
+                // １回限りのコールバックにしたい場合は、unregister() で代用する。
             }
         }.apply {
             onBackPressedCallback = this
