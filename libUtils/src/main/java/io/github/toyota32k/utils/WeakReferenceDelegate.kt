@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package io.github.toyota32k.utils
 
 import java.lang.ref.WeakReference
@@ -10,10 +12,10 @@ class WeakReferenceDelegate<T>(value:T?=null) {
     }
 
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
-        if(value!=null) {
-            ref = WeakReference(value)
+        ref = if(value!=null) {
+            WeakReference(value)
         } else {
-            ref = null
+            null
         }
     }
 }

@@ -9,6 +9,8 @@ import android.view.View
 import android.view.View.OnTouchListener
 import androidx.lifecycle.LifecycleOwner
 import io.github.toyota32k.utils.*
+import io.github.toyota32k.utils.android.dp2px
+import io.github.toyota32k.utils.lifecycle.Listeners
 
 enum class Orientation {
     Horizontal,

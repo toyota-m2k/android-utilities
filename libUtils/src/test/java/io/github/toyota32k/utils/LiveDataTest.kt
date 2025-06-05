@@ -3,6 +3,10 @@ package io.github.toyota32k.utils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
+import io.github.toyota32k.utils.lifecycle.and
+import io.github.toyota32k.utils.lifecycle.combineLatest
+import io.github.toyota32k.utils.lifecycle.not
+import io.github.toyota32k.utils.lifecycle.or
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -37,17 +41,17 @@ class LiveDataTest {
         val source3 = MutableLiveData<Int>(0)
         val source4 = MutableLiveData<Int>(0)
 
-        val c2 = combineLatest(source0,source1) { a,b->
-            (a?:0) + (b?:0)
+        val c2 = combineLatest(source0, source1) { a, b ->
+            (a ?: 0) + (b ?: 0)
         }
-        val c3 = combineLatest(source0,source1,source2) {a,b,c->
-            (a?:0) + (b?:0) + (c?:0)
+        val c3 = combineLatest(source0, source1, source2) { a, b, c ->
+            (a ?: 0) + (b ?: 0) + (c ?: 0)
         }
-        val c4 = combineLatest(source0,source1,source2,source3) {a,b,c,d->
-            (a?:0) + (b?:0) + (c?:0) + (d?:0)
+        val c4 = combineLatest(source0, source1, source2, source3) { a, b, c, d ->
+            (a ?: 0) + (b ?: 0) + (c ?: 0) + (d ?: 0)
         }
-        val c5 = combineLatest(source0,source1,source2,source3,source4) {a,b,c,d,e->
-            (a?:0) + (b?:0) + (c?:0) + (d?:0) + (e?:0)
+        val c5 = combineLatest(source0, source1, source2, source3, source4) { a, b, c, d, e ->
+            (a ?: 0) + (b ?: 0) + (c ?: 0) + (d ?: 0) + (e ?: 0)
         }
         assertEquals(0,c2.value)
         assertEquals(0,c3.value)
@@ -66,8 +70,8 @@ class LiveDataTest {
 //        c4.observe(activity) {}
 //        c5.observe(activity) {}
 
-        val m =  combineLatest(c2,c3,c4,c5) {a,b,c,d->
-            (a?:0) + (b?:0) + (c?:0) + (d?:0)
+        val m = combineLatest(c2, c3, c4, c5) { a, b, c, d ->
+            (a ?: 0) + (b ?: 0) + (c ?: 0) + (d ?: 0)
 
         }
         m.observe(activity) {}
@@ -114,10 +118,10 @@ class LiveDataTest {
         val source2 = MutableLiveData<Boolean>(false)
 
         val not = source0.not()
-        val and = and(source0,source1,source2)
-        val or = or(source0,source1,source2)
+        val and = and(source0, source1, source2)
+        val or = or(source0, source1, source2)
 
-        val m = or(not,and,or)
+        val m = or(not, and, or)
         m.observe(activity) {}
 
         assertEquals(false, source0.value)

@@ -16,14 +16,19 @@ import kotlin.time.Duration
  * @param autoReset false: 手動リセット（デフォルト）/ true: 自動リセット
  */
 class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
+    private val flag = java.util.concurrent.atomic.AtomicBoolean(initial)
     private val flow = MutableStateFlow(initial)
     private val mutex = Mutex()
 
-    suspend fun set() {
-        flow.value = true
+    fun set() {
+        if( flag.compareAndSet(false, true) ) {
+            flow.value = true
+        }
     }
-    suspend fun reset() {
-        flow.value = false
+    fun reset() {
+        if( flag.compareAndSet(true, false) ) {
+            flow.value = false
+        }
     }
     suspend fun waitOne() {
         if(!autoReset) {
@@ -33,7 +38,7 @@ class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
             // auto reset の場合は、first()を待つ呼び出しを１つに限定するため、mutexで待たせる。
             mutex.withLock {
                 flow.filter { it }.first()
-                flow.value = false
+                reset()
             }
         }
     }
@@ -55,14 +60,14 @@ class FlowableEvent(initial:Boolean=false, val autoReset:Boolean=false) {
         waitOne()
         return fn()
     }
-    suspend fun <T> withLock(timeout:Long, defOnTimeot:T, fn:()->T):T {
+    suspend fun <T> withLock(timeout:Long, defOnTimeout:T, fn:()->T):T {
         if(waitOne(timeout)) {
             return fn()
         } else {
-            return defOnTimeot
+            return defOnTimeout
         }
     }
-    suspend fun <T> withLock(timeout:Duration, defOnTimeot:T, fn:()->T):T {
-        return withLock(timeout.inWholeMilliseconds.coerceAtLeast(1), defOnTimeot, fn)
+    suspend fun <T> withLock(timeout:Duration, defOnTimeout:T, fn:()->T):T {
+        return withLock(timeout.inWholeMilliseconds.coerceAtLeast(1), defOnTimeout, fn)
     }
 }

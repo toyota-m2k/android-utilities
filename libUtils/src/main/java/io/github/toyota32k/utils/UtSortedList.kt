@@ -1,6 +1,4 @@
-package io.github.toyota32k.shared
-
-import io.github.toyota32k.utils.UtLog
+package io.github.toyota32k.utils
 
 open class UtSortedList<T>(
     private val innerList:MutableList<T>,

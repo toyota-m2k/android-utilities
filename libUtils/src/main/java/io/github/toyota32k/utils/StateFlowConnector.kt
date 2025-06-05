@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package io.github.toyota32k.utils
 
 import kotlinx.coroutines.CoroutineScope
@@ -15,13 +13,13 @@ class StateFlowConnector<T>(source: Flow<T>, private val destination: MutableSta
     private var scope :CoroutineScope?
 
     init {
-        val scope = CoroutineScope ((parentScope?.coroutineContext ?: Dispatchers.IO) + SupervisorJob())
-        source.onEach {
-            destination.value = it
-        }.onCompletion {
-            UtLog.libLogger.debug("disposed.")
-        }.launchIn(scope)
-        this.scope = scope
+        scope = CoroutineScope (parentScope?.coroutineContext ?: (Dispatchers.IO + SupervisorJob())).apply {
+            source.onEach {
+                destination.value = it
+            }.onCompletion {
+                UtLog.libLogger.debug("disposed.")
+            }.launchIn(this)
+        }
     }
 
     override fun dispose() {

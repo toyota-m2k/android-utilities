@@ -2,6 +2,7 @@ package io.github.toyota32k.utils
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import io.github.toyota32k.utils.lifecycle.LifecycleOwnerHolder
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule

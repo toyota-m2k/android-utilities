@@ -1,4 +1,4 @@
-package io.github.toyota32k.shared
+package io.github.toyota32k.utils
 
 /**
  * MutableList（主に ObservableListを想定）を内包し、ソート状態を維持しながら、要素の追加ができるようにする。
