@@ -2,6 +2,8 @@ package io.github.toyota32k.utils
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import io.github.toyota32k.utils.lifecycle.Callback
+import io.github.toyota32k.utils.lifecycle.Listeners
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -30,7 +32,7 @@ class ListenersTest {
     @Test
     fun callbackTest() {
         var activity = createActivity()
-        val callback = Callback<Int,String>()
+        val callback = Callback<Int, String>()
         var text:String? = null
 
         callback.set(activity, {

@@ -38,7 +38,7 @@ class FlowableEventTest {
             ev1.waitOne()
             v.incrementAndGet()
         }
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             ev1.waitOne()
             v.incrementAndGet()
         }
@@ -61,7 +61,7 @@ class FlowableEventTest {
             ev1.waitOne()
             v.incrementAndGet()
         }
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             ev1.waitOne()
             v.incrementAndGet()
         }

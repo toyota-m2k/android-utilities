@@ -60,10 +60,11 @@ dependencies {
 
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.core)
+    testImplementation(libs.core.testing)
+    testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockito.inline)
     testImplementation(libs.robolectric)
-    testImplementation(libs.core.testing)
 }
 
 // ./gradlew publishToMavenLocal

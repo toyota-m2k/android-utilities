@@ -3,6 +3,7 @@ package io.github.toyota32k.utils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import io.github.toyota32k.utils.lifecycle.SingleLiveEvent
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test

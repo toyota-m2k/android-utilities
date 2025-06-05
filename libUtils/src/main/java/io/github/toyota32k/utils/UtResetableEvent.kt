@@ -12,9 +12,6 @@ import kotlin.jvm.Throws
  *
  * Coroutine内では、FlowableEventのほうがsuspend関数ベースで効率的。
  * どうしてもスレッドをブロックして待ち合わせる必要がある場合に使用する。
- *
- * @author M.TOYOTA 13/10/21 Created.
- * @author Copyright (C) 2013 MetaMoJi Corp. All Rights Reserved.
  */
 class UtResetableEvent(initialSignaled: Boolean, private val autoReset: Boolean) {
     private val mSemaphore: Semaphore = Semaphore(1, false)
@@ -58,7 +55,6 @@ class UtResetableEvent(initialSignaled: Boolean, private val autoReset: Boolean)
         return true
     }
 
-    @Suppress("unused")
     fun <T> withLock(action: () -> T): T {
         waitOne()
         return action()

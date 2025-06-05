@@ -1,7 +1,5 @@
 package io.github.toyota32k.utils
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,8 +43,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface IUtPropOwner {
     val <T> Flow<T>.mutable: MutableStateFlow<T>
         get() = this as MutableStateFlow<T>
-    val <T> LiveData<T>.mutable: MutableLiveData<T>
-        get() = this as MutableLiveData<T>
 }
 
 /**

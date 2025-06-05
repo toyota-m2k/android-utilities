@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package io.github.toyota32k.utils
 
 import kotlinx.coroutines.*
@@ -18,8 +16,17 @@ import kotlin.time.DurationUnit
  *    doSomething()
  * }
  */
-class TimeKeeper(ownerContext: CoroutineContext, private val nameForDebug:String) {
-    constructor(ownerScope: CoroutineScope, nameForDebug: String) : this(ownerScope.coroutineContext, nameForDebug)
+class TimeKeeper(
+    ownerContext: CoroutineContext,
+    private val nameForDebug:String,
+    private val timeProvider: ()->Long = { System.currentTimeMillis() } // for unit test
+    ) {
+    constructor(
+        ownerScope: CoroutineScope,
+        nameForDebug: String,
+        timeProvider: ()->Long = { System.currentTimeMillis() }
+    ) : this(ownerScope.coroutineContext, nameForDebug,timeProvider)
+
     private var startTick:Long = 0L
     private val scope = CoroutineScope(ownerContext)
     private var paused = MutableStateFlow(0)
@@ -31,24 +38,25 @@ class TimeKeeper(ownerContext: CoroutineContext, private val nameForDebug:String
     /**
      * 監視を開始する
      * @param pause true: pause状態で監視を開始 (withTimeout()とともに使うことを想定）
+     * @param repeat true: 監視を繰り返す
+     * @param onTimeout 監視がタイムアウトしたときのコールバック falseを返すと、repeat=trueでも監視を終了する
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun start(timeoutInMS:Long, pause:Boolean=false, repeat:Boolean=false, onTimeout:(()->Unit)) {
+    fun start(timeoutInMS:Long, pause:Boolean=false, repeat:Boolean=false, onTimeout:(()->Boolean)) {
         timeout = timeoutInMS
         if(timeout<0) return
         if(pause) {
             paused.value = 1
         }
-        startTick = System.currentTimeMillis()
+        startTick = timeProvider()
         job = scope.launch {
             logger.debug("started")
             while(isActive) {
                 paused.first { it==0 }
-                val remain = timeout - (System.currentTimeMillis() - startTick)
+                val remain = timeout - (timeProvider() - startTick)
                 if(remain<=0) {
 //                    logger.debug("timeout")
-                    onTimeout()
-                    if(!repeat) {
+                    if(!onTimeout() || !repeat) {
                         break
                     }
                     touch()
@@ -64,8 +72,7 @@ class TimeKeeper(ownerContext: CoroutineContext, private val nameForDebug:String
      * 使用例）
      *  start(3.seconds, ...)   // かっちょよすぎる。。。渡すとき使うとき計２回変換されるんだが、かっちょよさのためには、そのくらい気にならない。
      */
-    @Suppress("unused")
-    fun start(timeout: Duration, pause:Boolean=false, repeat:Boolean=false, onTimeout:(()->Unit))
+    fun start(timeout: Duration, pause:Boolean=false, repeat:Boolean=false, onTimeout:(()->Boolean))
             = start(timeout.toLong(DurationUnit.MILLISECONDS), pause, repeat, onTimeout)
 
     /**
@@ -101,7 +108,7 @@ class TimeKeeper(ownerContext: CoroutineContext, private val nameForDebug:String
     @Suppress("MemberVisibilityCanBePrivate")
     fun touch() {
         if(timeout<0) return
-        startTick = System.currentTimeMillis()
+        startTick = timeProvider()
     }
 
     /**
