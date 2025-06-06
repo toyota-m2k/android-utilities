@@ -3,9 +3,10 @@ package io.github.toyota32k.utils.gesture
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
-import io.github.toyota32k.utils.Chronos
+import io.github.toyota32k.logger.Chronos
+import io.github.toyota32k.logger.UtLog
 import io.github.toyota32k.utils.IDisposable
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 import io.github.toyota32k.utils.WeakReferenceDelegate
 
 /**
@@ -23,7 +24,7 @@ class UtClickRepeater(
 ): IDisposable {
     private var view: View? by WeakReferenceDelegate()
 
-    private val logger = UtLog("ClickRepeater", null, UtClickRepeater::class.java)
+    private val logger = UtLog("ClickRepeater", UtLib.logger, UtClickRepeater::class.java)
     private var chronos = Chronos(logger)
 
     enum class RepeatStatus {

@@ -2,7 +2,7 @@ package io.github.toyota32k.utils.lifecycle
 
 import androidx.annotation.MainThread
 import androidx.lifecycle.*
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 import java.util.concurrent.atomic.AtomicBoolean
 
 interface ISingleLiveEvent<T> {
@@ -50,7 +50,7 @@ class SingleLiveData<T> : MutableLiveData<T>(), Observer<T> {
     @MainThread
     override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
         if (hasActiveObservers()) {
-            UtLog.Companion.libLogger.error("only one observer can be registered to SingleLiveData")
+            UtLib.logger.error("only one observer can be registered to SingleLiveData")
             throw IllegalStateException("SingleLiveData.observe prevent from registering multiple observers.")
         }
 
@@ -69,7 +69,7 @@ class SingleLiveData<T> : MutableLiveData<T>(), Observer<T> {
 
     override fun observeForever(observer: Observer<in T>) {
         if (hasActiveObservers()) {
-            UtLog.Companion.libLogger.error("only one observer can be registered to SingleLiveData")
+            UtLib.logger.error("only one observer can be registered to SingleLiveData")
             throw IllegalStateException("SingleLiveData.observe prevent from registering multiple observers.")
         }
 

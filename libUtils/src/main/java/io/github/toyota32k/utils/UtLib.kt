@@ -2,14 +2,16 @@
 
 package io.github.toyota32k.utils
 
+import io.github.toyota32k.logger.UtLog
+import io.github.toyota32k.logger.UtLogConfig
+
 object UtLib {
-    var DEBUG = false
-    @JvmStatic
-    fun initialize(externalLogger:IUtExternalLogger, debug:Boolean=false) {
-        UtLoggerInstance.externalLogger = externalLogger
-        DEBUG = debug
-    }
+    var DEBUG:Boolean
+        get() = UtLogConfig.debug
+        set(v) { UtLogConfig.debug = v }
+    var logger = UtLog("UtLib")
 }
+
 
 /**
  * 例外を投げるAssert
@@ -19,7 +21,7 @@ fun utAssert(check:Boolean,msg:(()->String)?=null) {
         if (UtLib.DEBUG) {
             error(msg?.invoke() ?: "Assertion failed")
         } else {
-            UtLog.libLogger.stackTrace(AssertionError(msg?.invoke() ?: "Assertion failed"))
+            UtLib.logger.stackTrace(AssertionError(msg?.invoke() ?: "Assertion failed"))
         }
     }
 }
@@ -29,7 +31,7 @@ fun utAssert(check:Boolean,msg:(()->String)?=null) {
  */
 fun utTenderAssert(check:Boolean,msg:(()->String)?=null) {
     if (UtLib.DEBUG && !check) {
-        UtLog.libLogger.assert(check, msg?.invoke() ?: "Assertion failed")
+        UtLib.logger.assert(check, msg?.invoke() ?: "Assertion failed")
     }
 }
 

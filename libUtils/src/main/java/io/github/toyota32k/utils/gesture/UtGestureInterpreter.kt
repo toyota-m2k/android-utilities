@@ -8,6 +8,7 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.View.OnTouchListener
 import androidx.lifecycle.LifecycleOwner
+import io.github.toyota32k.logger.UtLog
 import io.github.toyota32k.utils.*
 import io.github.toyota32k.utils.android.dp2px
 import io.github.toyota32k.utils.lifecycle.Listeners
@@ -519,7 +520,7 @@ class UtGestureInterpreter(
     }
     companion object {
         const val GI_LOG = false
-        val logger: UtLog = UtLog("GI", null, UtGestureInterpreter::class.java)
+        val logger = UtLog("GI", UtLib.logger, UtGestureInterpreter::class.java)
     }
 }
 

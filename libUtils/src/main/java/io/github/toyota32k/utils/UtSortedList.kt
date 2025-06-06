@@ -61,12 +61,12 @@ open class UtSortedList<T>(
     }
 
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
-        UtLog.libLogger.warn("index=$index will be ignored in UtSortedList")
+        UtLib.logger.warn("index=$index will be ignored in UtSortedList")
         return addAll(elements)
     }
 
     override fun add(index: Int, element: T) {
-        UtLog.libLogger.warn("index=$index will be ignored in UtSortedList")
+        UtLib.logger.warn("index=$index will be ignored in UtSortedList")
         add(element)
     }
 

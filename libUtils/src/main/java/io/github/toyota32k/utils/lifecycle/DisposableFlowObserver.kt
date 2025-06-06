@@ -3,7 +3,7 @@ package io.github.toyota32k.utils.lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.toyota32k.utils.IDisposableEx
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -25,7 +25,7 @@ class DisposableFlowObserver<T> constructor(flow: Flow<T>, coroutineContext: Cor
             flow.onEach {
                 callback(it)
             }.onCompletion {
-                UtLog.Companion.libLogger.debug("disposed.")
+                UtLib.logger.debug("disposed.")
             }.launchIn(this)
         }
 

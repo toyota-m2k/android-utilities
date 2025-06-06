@@ -4,7 +4,8 @@ import android.animation.Animator
 import android.animation.ValueAnimator
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.logger.UtLog
+import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -394,7 +395,7 @@ class UtManipulationAgent(
     }
 
     companion object {
-        val logger = UtLog("SZC", null, this::class.java)
+        val logger = UtLog("SZC", UtLib.logger, this::class.java)
     }
 
 }

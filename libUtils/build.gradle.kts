@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.lifecycleLivedataKtx)
     implementation(libs.lifecycleViewmodelKtx)
     implementation(libs.lifecycleService)
+    api(libs.android.logger)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.junitExt)

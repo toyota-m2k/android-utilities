@@ -10,8 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven (url="https://jitpack.io")
     }
 }
-rootProject.name = "AndroidUtilities"
+rootProject.name = "android-utilities"
 include(":app")
 include(":libUtils")
