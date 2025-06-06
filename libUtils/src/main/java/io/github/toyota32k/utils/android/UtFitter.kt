@@ -9,7 +9,7 @@ package io.github.toyota32k.utils.android
 
 import android.util.Size
 import android.util.SizeF
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 
 /**
  * 矩形領域のリサイズ方法
@@ -45,7 +45,7 @@ fun fitSizeTo(originalWidth:Float, originalHeight:Float, layoutWidth:Float, layo
             }
         }
     } catch(e:Exception) {
-        UtFitter.logger.stackTrace(e)
+        UtLib.logger.stackTrace(e)
         result.set(0f,0f)
     }
 }
@@ -147,7 +147,4 @@ class UtFitter(override var fitMode: FitMode, override var layoutWidth:Float, ov
         return this
     }
 
-    companion object {
-        val logger: UtLog = UtLog("Fitter", null, UtFitter::class.java)
-    }
 }

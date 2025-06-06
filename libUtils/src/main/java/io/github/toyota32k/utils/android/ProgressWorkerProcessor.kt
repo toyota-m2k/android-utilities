@@ -9,8 +9,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import io.github.toyota32k.utils.IAwaiter
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.logger.UtLog
+import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +19,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import java.util.UUID
+
+/**
+ * キャンセル可能な待ち合わせ用 i/f
+ */
+interface IAwaiter<T> {
+    suspend fun await():T
+    fun cancel()
+}
 
 abstract class ProgressWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     companion object {
@@ -36,7 +44,7 @@ abstract class ProgressWorker(context: Context, params: WorkerParameters) : Coro
 
 abstract class ProgressWorkerProcessor {
     companion object {
-        val logger = UtLog("PWP")
+        val logger = UtLog("PWP", UtLib.logger)
     }
     class ProgressAwaiter(scope:CoroutineScope, val workManager:WorkManager, val id:UUID, val progress:((current:Long,total:Long)->Unit)?): IAwaiter<Boolean> {
         val result:Flow<Boolean> = flow {

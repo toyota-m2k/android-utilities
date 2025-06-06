@@ -3,7 +3,7 @@ package io.github.toyota32k.utils.android
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 
 object PackageUtil { fun getPackageInfo(context: Context): PackageInfo? {
         return try {
@@ -11,7 +11,7 @@ object PackageUtil { fun getPackageInfo(context: Context): PackageInfo? {
             val pm = context.packageManager
             return pm.getPackageInfo(name, PackageManager.GET_META_DATA)
         } catch (e: Throwable) {
-            UtLog.Companion.libLogger.stackTrace(e)
+            UtLib.logger.stackTrace(e)
             null
         }
 
@@ -22,7 +22,7 @@ object PackageUtil { fun getPackageInfo(context: Context): PackageInfo? {
             // バージョン番号の文字列を返す
             getPackageInfo(context)?.versionName
         } catch (e: PackageManager.NameNotFoundException) {
-            UtLog.Companion.libLogger.stackTrace(e)
+            UtLib.logger.stackTrace(e)
             null
         }
     }

@@ -17,13 +17,13 @@ class StateFlowConnector<T>(source: Flow<T>, private val destination: MutableSta
             source.onEach {
                 destination.value = it
             }.onCompletion {
-                UtLog.libLogger.debug("disposed.")
+                UtLib.logger.debug("disposed.")
             }.launchIn(this)
         }
     }
 
     override fun dispose() {
-        UtLog.libLogger.debug()
+        UtLib.logger.debug()
         scope?.cancel()
         scope = null
     }

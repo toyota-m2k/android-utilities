@@ -5,7 +5,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import io.github.toyota32k.utils.IDisposable
-import io.github.toyota32k.utils.UtLog
+import io.github.toyota32k.utils.UtLib
 
 interface ListenerKey<T>: IDisposable {
     fun invoke(arg:T)
@@ -127,7 +127,7 @@ class Listeners<T> {
                 it.invoke(v)
             }
         } catch(e:Throwable) {
-            UtLog.Companion.libLogger.stackTrace(e)
+            UtLib.logger.stackTrace(e)
         }
         busy = false
 

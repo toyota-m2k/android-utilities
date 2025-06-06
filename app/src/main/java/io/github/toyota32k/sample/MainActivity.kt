@@ -5,13 +5,13 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import io.github.toyota32k.logger.UtLog
 import io.github.toyota32k.utils.gesture.Direction
 import io.github.toyota32k.utils.gesture.IUtManipulationTarget
 import io.github.toyota32k.utils.gesture.Orientation
 import io.github.toyota32k.utils.gesture.UtGestureInterpreter
 import io.github.toyota32k.utils.gesture.UtManipulationAgent
 import io.github.toyota32k.utils.gesture.UtSimpleManipulationTarget
-import io.github.toyota32k.utils.UtLog
 import kotlinx.coroutines.launch
 import java.util.EnumSet
 import kotlin.math.max

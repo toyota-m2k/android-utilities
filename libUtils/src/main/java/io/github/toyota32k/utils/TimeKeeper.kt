@@ -1,5 +1,6 @@
 package io.github.toyota32k.utils
 
+import io.github.toyota32k.logger.UtLog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -33,7 +34,7 @@ class TimeKeeper(
     private var job: Job? = null
     private var timeout:Long = -1
 
-    private val logger by lazy { UtLog("TimeKeeper($nameForDebug)") }
+    private val logger by lazy { UtLog("TimeKeeper($nameForDebug)", UtLib.logger) }
 
     /**
      * 監視を開始する
