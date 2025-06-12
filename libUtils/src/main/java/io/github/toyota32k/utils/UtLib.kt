@@ -31,7 +31,7 @@ fun utAssert(check:Boolean,msg:(()->String)?=null) {
  */
 fun utTenderAssert(check:Boolean,msg:(()->String)?=null) {
     if (UtLib.DEBUG && !check) {
-        UtLib.logger.assert(check, msg?.invoke() ?: "Assertion failed")
+        UtLib.logger.assert(false, msg?.invoke() ?: "Assertion failed")
     }
 }
 
@@ -83,6 +83,15 @@ fun String?.contentOrDefault(def:String) : String {
 fun <T> T.conditional(condition:Boolean, fn:T.()->Unit):T {
     if(condition) {
         fn()
+    }
+    return this
+}
+
+fun <T> T.conditional(condition:Boolean, onTrue:T.()->Unit, onFalse:T.()->Unit):T {
+    if(condition) {
+        onTrue()
+    } else {
+        onFalse()
     }
     return this
 }

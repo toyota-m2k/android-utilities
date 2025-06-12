@@ -10,3 +10,11 @@ interface IDisposable {
 interface IDisposableEx : IDisposable {
     val disposed:Boolean
 }
+
+inline fun <T> IDisposable.use(fn:()->T):T {
+    return try {
+        fn()
+    } finally {
+        dispose()
+    }
+}

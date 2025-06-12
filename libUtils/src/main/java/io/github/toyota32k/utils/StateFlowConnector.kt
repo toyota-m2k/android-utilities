@@ -3,8 +3,6 @@ package io.github.toyota32k.utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -14,24 +12,27 @@ import kotlinx.coroutines.flow.onEach
 /**
  * フローの出力を、他のMutableStateFlow の入力に接続する。
  */
-class StateFlowConnector<T>(source: Flow<T>, private val destination: MutableStateFlow<T>, parentScope:CoroutineScope?=null):IDisposable {
-    private var scope :CoroutineScope?
+class StateFlowConnector<T>(source: Flow<T>, private val destination: MutableStateFlow<T>, parentScope:CoroutineScope?=null):IDisposableEx {
+    private var job: Job?
 
     init {
-        scope = CoroutineScope( parentScope?.run { coroutineContext + Job(coroutineContext[Job]) } ?: (Dispatchers.IO + SupervisorJob())).apply {
-            source.onEach {
-                destination.value = it
-            }.onCompletion {
-                UtLib.logger.debug("disposed.")
-            }.launchIn(this)
-        }
+        UtLib.logger.verbose { "flow-connector started" }
+        UtLib.logger.debug()
+        job = source.onEach {
+            destination.value = it
+        }.onCompletion {
+            UtLib.logger.debug { "flow-connector disposed" }
+        }.launchIn(CoroutineScope( parentScope?.coroutineContext ?: Dispatchers.IO))
     }
 
     override fun dispose() {
         UtLib.logger.debug()
-        scope?.cancel()
-        scope = null
+        job?.cancel()
+        job = null
     }
+
+    override val disposed: Boolean
+        get() = job == null
 
     companion object {
         fun <T> Flow<T>.connectTo(destination:MutableStateFlow<T>, parentScope:CoroutineScope?=null):StateFlowConnector<T> =
