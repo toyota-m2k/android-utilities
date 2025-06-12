@@ -2,6 +2,7 @@ package io.github.toyota32k.utils
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
@@ -13,7 +14,7 @@ class StateFlowConnector<T>(source: Flow<T>, private val destination: MutableSta
     private var scope :CoroutineScope?
 
     init {
-        scope = CoroutineScope (parentScope?.coroutineContext ?: (Dispatchers.IO + SupervisorJob())).apply {
+        scope = CoroutineScope( parentScope?.run { coroutineContext + Job(coroutineContext[Job]) } ?: (Dispatchers.IO + SupervisorJob())).apply {
             source.onEach {
                 destination.value = it
             }.onCompletion {

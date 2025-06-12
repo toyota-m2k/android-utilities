@@ -6,6 +6,7 @@ import io.github.toyota32k.utils.IDisposableEx
 import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -20,12 +21,21 @@ import kotlin.coroutines.CoroutineContext
 class DisposableFlowObserver<T> constructor(flow: Flow<T>, coroutineContext: CoroutineContext, private val callback:(v:T)->Unit): IDisposableEx {
     constructor(flow: Flow<T>, callback:(v:T)->Unit) : this(flow, Dispatchers.Main, callback)
     constructor(flow: Flow<T>, owner: LifecycleOwner, callback:(v:T)->Unit) : this(flow, owner.lifecycleScope.coroutineContext, callback)
+
+    // Note:
+    // flow監視用スコープには、Job(coroutineContext[Job])を付加する。
+    //
+    //  - CoroutineScope(coroutineContext) とすると、dispose で scopeをキャンセルしたとき、親スコープもキャンセルされてしまう。
+    //    特に、owner.lifecycleScope.coroutineContext をキャンセルしてしまうと、それ以降、owner.lifecycleScope が働かなくなって致命傷を負う。
+    //  - SupservisorJob() を付加するとdispose()で親がキャンセルされる問題は回避できるが、親をキャンセルしても監視が止まらない。
+    //  - Job(coroutineContext[Job]) ... 親のJobを継承する新しい子Job を使うと、親がキャンセルされたら子もキャンセルされるが、子をキャンセルしても親はキャンセルされない。<-- これだｗ
+    //
     private var scope: CoroutineScope? =
-        CoroutineScope(coroutineContext).apply {
+        CoroutineScope(coroutineContext+Job(coroutineContext[Job])).apply {
             flow.onEach {
                 callback(it)
             }.onCompletion {
-                UtLib.logger.debug("disposed.")
+                UtLib.logger.verbose("disposed.")
             }.launchIn(this)
         }
 
