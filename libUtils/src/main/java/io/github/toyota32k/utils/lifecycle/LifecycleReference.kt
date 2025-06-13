@@ -2,7 +2,7 @@ package io.github.toyota32k.utils.lifecycle
 
 import androidx.lifecycle.LifecycleOwner
 
-class LifecycleReference<T>(v:T?, owner:LifecycleOwner, val onDestroyed:((T)->Unit)?=null) {
+open class LifecycleReference<T>(v:T?, owner:LifecycleOwner, val onDestroyed:((T)->Unit)?=null) {
     var value:T? = v
         private set
     private val holder = LifecycleOwnerHolder(owner) {
@@ -14,3 +14,5 @@ class LifecycleReference<T>(v:T?, owner:LifecycleOwner, val onDestroyed:((T)->Un
         value = null    // holder.dispose()では、destroyedCallbackは呼ばれない
     }
 }
+
+class LifecycleOwnerReference<T:LifecycleOwner>(owner:T, onDestroyed:((T)->Unit)?=null) : LifecycleReference<T>(owner, owner, onDestroyed)
