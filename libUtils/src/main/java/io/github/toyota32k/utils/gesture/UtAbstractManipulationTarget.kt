@@ -1,5 +1,6 @@
 package io.github.toyota32k.utils.gesture
 
+import android.view.View
 import java.util.EnumSet
 
 /**
@@ -24,3 +25,6 @@ abstract class UtAbstractManipulationTarget : IUtManipulationTarget {
         return false
     }
 }
+
+// ページングなし、parentView/contentView固定の最小ManipulationTarget実装
+open class UtMinimumManipulationTarget(override val parentView: View, override val contentView: View) : UtAbstractManipulationTarget()

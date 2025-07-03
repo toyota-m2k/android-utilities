@@ -5,6 +5,7 @@ import java.util.EnumSet
 
 /**
  * parentView, contentView が動的に変化しない単純な ManipulationTarget
+ * ページングも不要な場合は、UtAbstractManipulationTargetまたは、UtMinimumManipulationTarget を利用する。
  */
 @Suppress("unused")
 open class UtSimpleManipulationTarget(
