@@ -24,7 +24,7 @@ mockitoInline = "5.2.0"
 mockitoKotlin = "5.4.0"
 preferenceKtx = "1.2.1"
 robolectric = "4.11.1"
-work = "2.10.1"
+work = "2.10.2"
 
 [libraries]
 android-logger = { module = "com.github.toyota-m2k:android-logger", version.ref = "androidLogger" }
