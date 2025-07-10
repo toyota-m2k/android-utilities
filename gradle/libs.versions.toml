@@ -1,5 +1,6 @@
 [versions]
 #plugins
+gson = "2.11.0"
 kotlin = "2.1.21"
 agp = "8.10.1"
 
@@ -25,6 +26,8 @@ mockitoKotlin = "5.4.0"
 preferenceKtx = "1.2.1"
 robolectric = "4.11.1"
 work = "2.10.2"
+junitKtx = "1.2.1"
+runtime = "1.0.0-alpha04"
 
 [libraries]
 android-logger = { module = "com.github.toyota-m2k:android-logger", version.ref = "androidLogger" }
@@ -34,6 +37,7 @@ appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat"
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycleExtensions" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -50,6 +54,8 @@ mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
+androidx-runtime = { group = "androidx.xr.runtime", name = "runtime", version.ref = "runtime" }
 
 [plugins]
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

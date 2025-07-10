@@ -9,7 +9,7 @@ version = "1.0"
 
 android {
     namespace = "io.github.toyota32k.utils"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 23
@@ -53,7 +53,10 @@ dependencies {
     implementation(libs.lifecycleLivedataKtx)
     implementation(libs.lifecycleViewmodelKtx)
     implementation(libs.lifecycleService)
+    implementation(libs.gson)
     api(libs.android.logger)
+    implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.runtime)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.junitExt)
