@@ -55,13 +55,13 @@ dependencies {
     implementation(libs.lifecycleService)
     implementation(libs.gson)
     api(libs.android.logger)
-    implementation(libs.androidx.junit.ktx)
-    implementation(libs.androidx.runtime)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.junitExt)
     androidTestImplementation(libs.espressoCore)
 
+    testImplementation(libs.androidx.junit.ktx)
+    testImplementation(libs.androidx.runtime)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.core)
     testImplementation(libs.core.testing)
