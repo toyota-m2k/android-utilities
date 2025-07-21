@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import io.github.toyota32k.logger.UtLog
+import io.github.toyota32k.utils.IAwaiter
 import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +25,24 @@ import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 /**
- * キャンセル可能な待ち合わせ用 i/f
+ * Workerの完了を待ち合わせるための i/f (IAwaiter)
+ * 完了時の WorkInfo を lastWorkInfoに保持する。
+ * WorkInfo.outputData によって、SUCCEEDED/FAILED以外の情報を返したいときに利用することを想定。
  */
-interface IAwaiter<T> {
-    suspend fun await():T
-    fun cancel()
+interface IWorkerAwaiter : IAwaiter<Boolean> {
+    val lastWorkInfo: WorkInfo?
+//    override suspend fun await():Boolean
+//    override fun cancel()
 }
 
+/**
+ * progressコールバック付きCoroutineWorker の実装用基底クラス
+ * 派生クラスで、fun doWork() をオーバーライドし、Workerの処理を記述する。
+ * doWork() 内では、CoroutineWorkerのメソッドに加えて、以下のメソッドが利用できる。
+ *
+ * - fun progress() 進捗をProgressAwaiterに送信する --> ProgressWorkerGeneratorに渡した onProgress ハンドラで受け取る
+ * - fun customEvent() 任意のDataをProgressAwaiterに送信する --> ProgressWorkerGeneratorに渡した onCustomEvent ハンドラで受け取る
+ */
 abstract class ProgressWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     companion object {
         const val PROGRESS_TOTAL_LENGTH = "total_length"
@@ -50,14 +62,22 @@ abstract class ProgressWorker(context: Context, params: WorkerParameters) : Coro
     }
 }
 
+/**
+ * ProgressWorkerを生成・実行するためのヘルパークラス。
+ */
 object ProgressWorkerGenerator {
     val logger = UtLog("PWG", UtLib.logger)
 
+    /**
+     * ProgressWorkerと通信し、実行を待ち合わせて、結果を中継するための IWorkerAwaiter実装クラス。
+     */
     class ProgressAwaiter(
         scope:CoroutineScope,
         val workManager:WorkManager, val id:UUID,
         val onProgress:((current:Long, total:Long)->Unit)?,
-        val onCustomEvent:((Data)->Unit)?): IAwaiter<Boolean> {
+        val onCustomEvent:((Data)->Unit)?): IWorkerAwaiter {
+        override var lastWorkInfo: WorkInfo? = null
+
         private val result:Flow<Boolean> = flow {
             workManager.getWorkInfoByIdFlow(id)
                 .collect { workInfo ->
@@ -76,10 +96,12 @@ object ProgressWorkerGenerator {
                         }
                         WorkInfo.State.SUCCEEDED -> {
                             logger.info("work succeeded")
+                            lastWorkInfo = workInfo
                             emit(true)
                         }
                         WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
                             logger.info("work failed")
+                            lastWorkInfo = workInfo
                             emit(false)
                         }
                         else -> {}
@@ -88,19 +110,31 @@ object ProgressWorkerGenerator {
             logger.info("Completed")
         }.shareIn(scope, started = SharingStarted.Eagerly, replay = 1)
 
+        /**
+         * 結果を待ち合わせる。
+         */
         override suspend fun await(): Boolean {
             return result.first()
         }
 
+        /**
+         * Workerの処理を中止する。
+         */
         override fun cancel() {
             workManager.cancelWorkById(id)
         }
     }
 
-    inline fun <reified T:ProgressWorker> process(context:Context, data:Data, noinline onProgress:((current:Long, total:Long)->Unit)?): IAwaiter<Boolean> {
+    /**
+     * 最小限の指定で ProgressWorkerを開始する。
+     */
+    inline fun <reified T:ProgressWorker> process(context:Context, data:Data, noinline onProgress:((current:Long, total:Long)->Unit)?): IWorkerAwaiter {
         return builder<T>().setInputData(data).apply { if(onProgress!=null) onProgress(onProgress) }.build(context)
     }
 
+    /**
+     * ProgressWorker開始用の Builderクラス
+     */
     class Builder(clazz:Class<out ListenableWorker>) {
         private val request = OneTimeWorkRequest.Builder(clazz)
         private var expedited: OutOfQuotaPolicy = OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
@@ -129,7 +163,7 @@ object ProgressWorkerGenerator {
             onCustomEvent = fn
             return this
         }
-        fun build(context:Context): IAwaiter<Boolean> {
+        fun build(context:Context): IWorkerAwaiter {
             val req = request.setExpedited(expedited).build()
 
             val workManager = WorkManager.getInstance(context)
