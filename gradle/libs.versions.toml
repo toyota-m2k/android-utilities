@@ -1,6 +1,6 @@
 [versions]
 #plugins
-gson = "2.11.0"
+gson = "2.13.1"
 kotlin = "2.1.21"
 agp = "8.10.1"
 
@@ -19,13 +19,13 @@ constraintlayout = "2.2.1"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleKtx = "2.9.1"
+lifecycleKtx = "2.9.2"
 mockitoCore = "5.18.0"
 mockitoInline = "5.2.0"
-mockitoKotlin = "5.4.0"
+mockitoKotlin = "6.0.0"
 preferenceKtx = "1.2.1"
-robolectric = "4.11.1"
-work = "2.10.2"
+robolectric = "4.15.1"
+
 junitKtx = "1.2.1"
 runtime = "1.0.0-alpha04"
 
@@ -34,8 +34,6 @@ android-logger = { module = "com.github.toyota-m2k:android-logger", version.ref 
 core = { module = "androidx.test:core", version.ref = "core" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work" }
-androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
