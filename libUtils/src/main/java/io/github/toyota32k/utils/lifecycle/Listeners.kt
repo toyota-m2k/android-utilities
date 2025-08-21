@@ -11,17 +11,22 @@ interface ListenerKey<T>: IDisposable {
     fun invoke(arg:T)
 }
 
-class Listeners<T> {
-    interface IListener<T> {
+class Listeners<T> : IDisposable {
+    fun interface IListener<T> {
         fun onChanged(value:T)
     }
 
     private val functions = mutableListOf<ListenerKey<T>>()
-    private val tobeDelete = mutableSetOf<ListenerKey<T>>()
-    private var busy:Boolean = false
+    private val tobeDeleted = mutableSetOf<ListenerKey<T>>()
+    private var busy:Boolean = false    // invoke中にセットされる
     val count:Int get() = functions.size
 
-    inner open class IndependentInvoker(callback:(T)->Unit):ListenerKey<T> {
+    @MainThread
+    override fun dispose() {
+        clear()
+    }
+
+    open inner class IndependentInvoker(callback:(T)->Unit):ListenerKey<T> {
         var fn:((T)->Unit)? = callback
 
         @MainThread
@@ -29,11 +34,12 @@ class Listeners<T> {
             fn?.invoke(arg)
         }
 
+        @MainThread
         override fun dispose() {
             if(!busy) {
                 functions.remove(this)
             } else {
-                tobeDelete.add(this)
+                tobeDeleted.add(this)
             }
             fn = null
         }
@@ -62,7 +68,7 @@ class Listeners<T> {
                     functions.remove(this)
                 } else {
                     // invoke中にdeleteが要求された場合はここに入る
-                    tobeDelete.add(this)
+                    tobeDeleted.add(this)
                 }
             }
         }
@@ -114,8 +120,13 @@ class Listeners<T> {
 
     @MainThread
     fun clear() {
-        while(functions.isNotEmpty()) {
-            functions.last().dispose()
+        if (!busy) {
+            while (functions.isNotEmpty()) {
+                functions.last().dispose()
+            }
+        } else {
+            // invoke中にdeleteが要求された場合はここに入る
+            tobeDeleted.addAll(functions)
         }
     }
 
@@ -131,16 +142,16 @@ class Listeners<T> {
         }
         busy = false
 
-        if(tobeDelete.size>0) {
-            tobeDelete.forEach {
+        if(tobeDeleted.isNotEmpty()) {
+            tobeDeleted.forEach {
                 it.dispose()
             }
-            tobeDelete.clear()
+            tobeDeleted.clear()
         }
     }
 }
 
-class UnitListeners {
+class UnitListeners : IDisposable {
     private val listeners = Listeners<Unit>()
     @MainThread
     fun add(owner:LifecycleOwner, fn:()->Unit): IDisposable {
@@ -153,10 +164,17 @@ class UnitListeners {
         return listeners.addForever { fn() }
     }
 
+    @MainThread
     fun clear() {
         listeners.clear()
     }
 
+    @MainThread
+    override fun dispose() {
+        listeners.dispose()
+    }
+
+    @MainThread
     fun invoke() {
         listeners.invoke(Unit)
     }

@@ -12,6 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import kotlin.invoke
 
 class CallbackTest {
 
@@ -178,5 +179,31 @@ class CallbackTest {
         )
 
         assertEquals(expected, result)
+    }
+
+    @Test
+    fun testDisposeDirectly() {
+        val owner = createLifecycleOwner(Lifecycle.State.RESUMED)
+        val callList = mutableListOf<String>()
+        val callback = Callback<String, Boolean>(owner) { param ->
+            callList.add(param)
+            true
+        }
+
+        // dispose前は呼び出し可能
+        val result1 = callback.invoke("before")
+        assertEquals(true, result1)
+        assertEquals(listOf("before"), callList)
+
+        // dispose実行
+        callback.dispose()
+
+        // dispose後は呼び出し不可
+        val result2 = callback.invoke("after")
+        assertNull(result2)
+        assertEquals(listOf("before"), callList)
+
+        // disposeを複数回呼んでも例外が出ない
+        callback.dispose()
     }
 }

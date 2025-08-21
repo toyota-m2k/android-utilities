@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
+import kotlin.invoke
 
 @RunWith(RobolectricTestRunner::class)
 class ListenersTest {
@@ -113,5 +114,31 @@ class ListenersTest {
         listeners.invoke("E")
         assertEquals("1-2:D", text1)
         assertEquals("2-2:E", text2)
+    }
+
+    @Test
+    fun listenersDisposeTest() {
+        val activity = createActivity()
+        val listeners = Listeners<String>()
+        var called1 = false
+        var called2 = false
+
+        listeners.add(activity) {
+            called1 = true
+        }
+        listeners.add(activity) {
+            called2 = true
+        }
+
+        listeners.invoke("A")
+        assertEquals(true, called1)
+        assertEquals(true, called2)
+
+        called1 = false
+        called2 = false
+        listeners.dispose()
+        listeners.invoke("B")
+        assertEquals(false, called1)
+        assertEquals(false, called2)
     }
 }
