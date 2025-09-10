@@ -2,7 +2,7 @@
 #plugins
 gson = "2.13.1"
 kotlin = "2.2.10"
-agp = "8.12.1"
+agp = "8.13.0"
 
 #libraries
 core = "1.7.0"
