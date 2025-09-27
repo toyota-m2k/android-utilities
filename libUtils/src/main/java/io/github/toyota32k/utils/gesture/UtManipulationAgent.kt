@@ -385,6 +385,22 @@ class UtManipulationAgent(
         } else false
     }
 
+    data class ScrollAndScaleState(
+        val translationX:Float,
+        val translationY:Float,
+        val scale:Float
+    )
+
+    fun saveScrollAndScale():ScrollAndScaleState {
+        return ScrollAndScaleState(translationX, translationY, scale)
+    }
+
+    fun restoreScrollAndScale(state:ScrollAndScaleState) {
+        translationX = state.translationX
+        translationY = state.translationY
+        scale = state.scale
+    }
+
     /**
      * UtGestureInterpreter#setup()でonScroll/onScaleイベントを接続する代わりに、
      * このメソッドでまとめてセットしてもよい。
