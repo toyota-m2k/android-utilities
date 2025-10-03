@@ -28,28 +28,43 @@ enum class FitMode {
  * @param layout    レイアウト先の指定サイズ
  * @param result    結果を返すバッファ
  */
-fun fitSizeTo(originalWidth:Float, originalHeight:Float, layoutWidth:Float, layoutHeight:Float, mode: FitMode, result: MuSize) {
-    try {
+fun fitSizeTo(originalWidth:Float, originalHeight:Float, layoutWidth:Float, layoutHeight:Float, mode: FitMode, result: MuSize) : Float {
+    return try {
         when (mode) {
-            FitMode.Fit -> result.set(layoutWidth, layoutHeight)
-            FitMode.Width -> result.set(layoutWidth, originalHeight * layoutWidth / originalWidth)
-            FitMode.Height -> result.set(originalWidth * layoutHeight / originalHeight, layoutHeight)
+            FitMode.Fit -> {
+                result.set(layoutWidth, layoutHeight)
+                0f
+            }
+            FitMode.Width -> {
+                (layoutWidth / originalWidth).also { ratio ->
+                    result.set(layoutWidth, originalHeight * ratio)
+                }
+            }
+            FitMode.Height -> {
+                (layoutHeight / originalHeight).also { ratio ->
+                    result.set(originalWidth * ratio, layoutHeight)
+                }
+            }
             FitMode.Inside -> {
                 val rw = layoutWidth / originalWidth
                 val rh = layoutHeight / originalHeight
                 if (rw < rh) {
                     result.set(layoutWidth, originalHeight * rw)
+                    rw
                 } else {
                     result.set(originalWidth * rh, layoutHeight)
+                    rh
                 }
             }
         }
     } catch(e:Exception) {
         UtLib.logger.stackTrace(e)
         result.set(0f,0f)
+        0f
     }
 }
-fun fitSizeTo(original: MuSize, layout: MuSize, mode: FitMode, result: MuSize) = fitSizeTo(original.width, original.height, layout.width, layout.height, mode, result)
+
+fun fitSizeTo(original: MuSize, layout: MuSize, mode: FitMode, result: MuSize) : Float = fitSizeTo(original.width, original.height, layout.width, layout.height, mode, result)
 
 interface IUtLayoutHint {
     val fitMode: FitMode
@@ -90,6 +105,11 @@ class UtFitter(override var fitMode: FitMode, override var layoutWidth:Float, ov
     constructor(fitMode: FitMode, layoutSize:Size):this(fitMode,layoutSize.width.toFloat(), layoutSize.height.toFloat())
     constructor(fitMode: FitMode, layoutSize:SizeF):this(fitMode,layoutSize.width, layoutSize.height)
 
+    var ratio:Float = 1f
+        private set
+    val inflated:Boolean get() = ratio > 1f
+    val deflated:Boolean get() = ratio!=0f && ratio < 1f
+
     val result = MuSize()
     val resultSize:Size get() = result.asSize
     val resultSizeF:SizeF get() = result.asSizeF
@@ -128,22 +148,22 @@ class UtFitter(override var fitMode: FitMode, override var layoutWidth:Float, ov
     fun setLayoutSize(size:Size):UtFitter
         = setLayoutSize(size.width, size.height)
     fun setLayoutSize(size:SizeF):UtFitter
-            = setLayoutSize(size.width, size.height)
+        = setLayoutSize(size.width, size.height)
 
     fun fit(src: Size): UtFitter {
-        fitSizeTo(src.width.toFloat(), src.height.toFloat(), layoutWidth, layoutHeight, fitMode, result)
+        ratio = fitSizeTo(src.width.toFloat(), src.height.toFloat(), layoutWidth, layoutHeight, fitMode, result)
         return this
     }
     fun fit(src: SizeF): UtFitter {
-        fitSizeTo(src.width, src.height, layoutWidth, layoutHeight, fitMode, result)
+        ratio = fitSizeTo(src.width, src.height, layoutWidth, layoutHeight, fitMode, result)
         return this
     }
     fun fit(srcWidth:Int, srcHeight:Int): UtFitter {
-        fitSizeTo(srcWidth.toFloat(), srcHeight.toFloat(), layoutWidth, layoutHeight, fitMode, result)
+        ratio = fitSizeTo(srcWidth.toFloat(), srcHeight.toFloat(), layoutWidth, layoutHeight, fitMode, result)
         return this
     }
     fun fit(srcWidth:Float, srcHeight:Float): UtFitter {
-        fitSizeTo(srcWidth, srcHeight, layoutWidth, layoutHeight, fitMode, result)
+        ratio = fitSizeTo(srcWidth, srcHeight, layoutWidth, layoutHeight, fitMode, result)
         return this
     }
 
