@@ -1,5 +1,6 @@
 package io.github.toyota32k.utils
 
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,6 +53,7 @@ interface IUtPropOwner {
  * 値を変更するとき、明示的に .mutable を介することで、プログラマの意識をちょっとだけ高める程度の効果はあるんじゃないかと。
  * 当然のことながら、mutable の定義が衝突するので、IUtPropOwner と混ぜるのはNG。
  */
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class FlowProp<T>(val mutable:MutableStateFlow<T>) : StateFlow<T> by mutable {
     constructor(initialValue:T) : this (MutableStateFlow(initialValue))
 }
