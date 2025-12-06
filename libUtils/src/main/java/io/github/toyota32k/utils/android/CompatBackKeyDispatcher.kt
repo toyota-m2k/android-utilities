@@ -29,14 +29,14 @@ class CompatBackKeyDispatcher(
      * @param callback Back Key 押下時のコールバック
      */
     fun register(activity: ComponentActivity, lifecycleOwner: LifecycleOwner, callback: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
-            // Android 14以降: onBackInvokedDispatcherを使用
-            onBackInvokedCallback = AutoDisposalOnBackInvokedDispatcher().apply {
-                register(onBackInvokedDispatcherPriority, activity, lifecycleOwner) {
-                    callback()
-                }
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
+//            // Android 14以降: onBackInvokedDispatcherを使用
+//            onBackInvokedCallback = AutoDisposalOnBackInvokedDispatcher().apply {
+//                register(onBackInvokedDispatcherPriority, activity, lifecycleOwner) {
+//                    callback()
+//                }
+//            }
+//        }
         // Android 13以前、または enableOnBackInvokedCallback="false" の場合は onBackPressedDispatcherを使用
         // どちらのコールバックが呼ばれるかは OSに任せる
         object : OnBackPressedCallback(true) {
