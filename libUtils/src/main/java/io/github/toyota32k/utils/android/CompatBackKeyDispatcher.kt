@@ -11,6 +11,16 @@ import androidx.lifecycle.LifecycleOwner
  */
 class CompatBackKeyDispatcher(
     private var onBackInvokedDispatcherPriority:Int = 0) {
+
+    companion object {
+        // onBackInvokedDispatcher を使うと、IMEを表示した状態で Backキーを押下すると、
+        // IMEがBackを処理する前に、アプリ側のonBackInvokedDispatcherがイベントを受け取ってしまうため、IMEが閉じなくなる。
+        // ダイアログで使っていると、IMEを閉じようとして「戻る」操作をすると、ダイアログの方が閉じてしまう。
+        // onBackInvokedDispatcherPriority をいろいろ調整しても効果なし。
+        // 当面は onBackInvokedDispatcherは使わず、onBackPressedDispatcher でやりくりする。
+        var ENABLE_INVOKED_DISPATCHER = false
+    }
+
     private var onBackInvokedCallback: AutoDisposalOnBackInvokedDispatcher? = null
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
@@ -29,14 +39,14 @@ class CompatBackKeyDispatcher(
      * @param callback Back Key 押下時のコールバック
      */
     fun register(activity: ComponentActivity, lifecycleOwner: LifecycleOwner, callback: () -> Unit) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
-//            // Android 14以降: onBackInvokedDispatcherを使用
-//            onBackInvokedCallback = AutoDisposalOnBackInvokedDispatcher().apply {
-//                register(onBackInvokedDispatcherPriority, activity, lifecycleOwner) {
-//                    callback()
-//                }
-//            }
-//        }
+        if (ENABLE_INVOKED_DISPATCHER && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU/*34*/) {
+            // Android 14以降: onBackInvokedDispatcherを使用
+            onBackInvokedCallback = AutoDisposalOnBackInvokedDispatcher().apply {
+                register(onBackInvokedDispatcherPriority, activity, lifecycleOwner) {
+                    callback()
+                }
+            }
+        }
         // Android 13以前、または enableOnBackInvokedCallback="false" の場合は onBackPressedDispatcherを使用
         // どちらのコールバックが呼ばれるかは OSに任せる
         object : OnBackPressedCallback(true) {
