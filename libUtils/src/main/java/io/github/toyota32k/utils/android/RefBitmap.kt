@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import androidx.core.graphics.scale
 import io.github.toyota32k.utils.IDisposable
+import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.Closeable
@@ -17,8 +18,17 @@ import kotlin.reflect.KProperty
 class RefBitmap(bmp:Bitmap) {
     private var bitmapEntity:Bitmap? = bmp
     private var refCount: Int = 0
+
+    init {
+        UtLib.logger.debug {
+            "RefBitmap created ${bmp.hashCode()}"
+        }
+    }
+
+
     fun addRef(): RefBitmap {
         if (!hasBitmap) {
+            UtLib.logger.error("RefBitmap doesn't have bitmap.")
             throw IllegalStateException("bitmap is already recycled")
         }
         refCount++
@@ -27,7 +37,10 @@ class RefBitmap(bmp:Bitmap) {
     fun release() {
         refCount--
         if (refCount<=0) {
-            bitmapEntity?.recycle()
+            UtLib.logger.debug { "RefBitmap released ${bitmap.hashCode()} refCount=$refCount" }
+            if (bitmapEntity?.isRecycled==false) {
+                bitmapEntity?.recycle()
+            }
             bitmapEntity = null
         }
     }
@@ -128,10 +141,12 @@ class RefBitmapHolder(): Closeable, IDisposable, ReadWriteProperty<Any, RefBitma
     val hasBitmap:Boolean get() = refBitmap?.hasBitmap==true
 
     override fun close() {
+        UtLib.logger.debug()
         reset()
     }
 
     override fun dispose() {
+        UtLib.logger.debug()
         reset()
     }
 
