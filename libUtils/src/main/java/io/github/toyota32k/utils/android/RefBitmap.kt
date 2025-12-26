@@ -113,9 +113,8 @@ class RefBitmap(bmp:Bitmap) {
  * ReadWritePropertyを継承しており、ViewやViewModelのメンバ変数（フィールド）として利用されることを想定。
  *     var bmp: RefBitmap by RefBitmapHolder()
  */
-class RefBitmapHolder(): Closeable, IDisposable, ReadWriteProperty<Any, RefBitmap?> {
-    constructor(bx:RefBitmap):this() { refBitmap = bx.apply { addRef()} }
-    var refBitmap: RefBitmap? = null
+class RefBitmapHolder(bx:RefBitmap?=null): Closeable, IDisposable, ReadWriteProperty<Any, RefBitmap?> {
+    var refBitmap: RefBitmap? = bx?.apply { addRef() }
         private set
 
     fun set(br:RefBitmap?) {
