@@ -25,7 +25,9 @@ class RefBitmap(bmp:Bitmap) {
         }
     }
 
-
+    /**
+     * 参照カウンタをインクリメント
+     */
     fun addRef(): RefBitmap {
         if (!hasBitmap) {
             UtLib.logger.error("RefBitmap doesn't have bitmap.")
@@ -34,6 +36,10 @@ class RefBitmap(bmp:Bitmap) {
         refCount++
         return this
     }
+
+    /**
+     * 参照カウンタをデクリメント
+     */
     fun release() {
         refCount--
         if (refCount<=0) {
@@ -77,17 +83,38 @@ class RefBitmap(bmp:Bitmap) {
         }
     }
 
+    /**
+     * 有効な（recycleされていない）ビットマップを持っているか？
+     */
     val hasBitmap get() = bitmapEntity?.isRecycled==false
-    val bitmap: Bitmap get() = bitmapEntity ?: throw java.lang.IllegalStateException("bitmap is already recycled")
+
+    /**
+     * 生のビットマップを取得
+     * ビットマップを持っていなければ IllegalStateException をスロー
+     * 安全に
+     */
+    val bitmap: Bitmap get() = bitmapEntity ?: throw IllegalStateException("bitmap is already recycled")
     val bitmapOrNull:Bitmap? get() = bitmapEntity?.takeIf { !it.isRecycled }
     val width:Int get() = bitmap.width
     val height:Int get() = bitmap.height
+
+    /**
+     * リサイズ（解像度変更）
+     */
     fun scale(width:Int, height:Int, filter:Boolean=true):RefBitmap {
         return bitmap.scale(width, height, filter).toRef()
     }
+
+    /**
+     * 切り抜き
+     */
     fun crop(sx:Int, sy:Int, width:Int, height:Int):RefBitmap {
-        return createBitmap(this, sx, sy, width, height)
+        return Bitmap.createBitmap(bitmap, sx, sy, width, height).toRef()
     }
+
+    /**
+     * 回転
+     */
     fun rotate(angle:Float):RefBitmap {
         if(angle==0f) return this
         val matrix = Matrix().apply { postRotate(angle) }
@@ -97,9 +124,6 @@ class RefBitmap(bmp:Bitmap) {
     companion object {
         fun Bitmap.toRef():RefBitmap {
             return RefBitmap(this)
-        }
-        fun createBitmap(ref:RefBitmap, sx:Int, sy:Int, width:Int, height:Int): RefBitmap {
-            return Bitmap.createBitmap(ref.bitmap, sx, sy, width, height).toRef()
         }
     }
 }
@@ -162,6 +186,7 @@ class RefBitmapHolder(bx:RefBitmap?=null): Closeable, IDisposable, ReadWriteProp
 /**
  * RefBitmap を lazy 的に保持することで、NonNull扱いとした RefBitmapHolder亜種
  * ReadWritePropertyとして使うことしか想定していない。
+ * 使用実績なしw
  */
 class LazyRefBitmapHolder() : Closeable, IDisposable, ReadWriteProperty<Any, RefBitmap> {
     constructor(bx:RefBitmap):this() { refBitmap = bx.apply { addRef()} }
