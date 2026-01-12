@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.lifecycleService)
     implementation(libs.gson)
     api(libs.android.logger)
+    implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.junitExt)
