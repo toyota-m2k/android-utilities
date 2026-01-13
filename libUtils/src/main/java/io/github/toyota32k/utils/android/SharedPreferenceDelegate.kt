@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
+import io.github.toyota32k.utils.UtLib
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -13,6 +14,9 @@ open class SharedPreferenceDelegate(val appPref: SharedPreferences) {
     constructor(application: Application) : this(PreferenceManager.getDefaultSharedPreferences(application.applicationContext))
     constructor(context: Context) : this(PreferenceManager.getDefaultSharedPreferences(context))
     constructor(context: Context, name: String, mode: Int = Context.MODE_PRIVATE) : this(context.getSharedPreferences(name, mode))
+    constructor():this(UtLib.applicationContext)
+    constructor(name: String, mode: Int = Context.MODE_PRIVATE) : this(UtLib.applicationContext.getSharedPreferences(name, mode))
+
 
     fun <T:Any> pref(default: T) = object : ReadWriteProperty<Any, T> {
         @Suppress("UNCHECKED_CAST")

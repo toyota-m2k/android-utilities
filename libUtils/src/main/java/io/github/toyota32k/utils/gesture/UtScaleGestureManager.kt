@@ -3,6 +3,7 @@ package io.github.toyota32k.utils.gesture
 import android.content.Context
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
+import io.github.toyota32k.utils.UtLib
 import io.github.toyota32k.utils.gesture.UtGestureInterpreter.IListenerBuilder
 
 /**
@@ -31,6 +32,12 @@ class UtScaleGestureManager(
     val manipulationTarget: IUtManipulationTarget,
     minScale:Float = 0f, maxScale:Float = 10f,
 ) {
+    constructor(
+        enableDoubleTap:Boolean,        // !rapidTap for GestureInterpreter
+        manipulationTarget: IUtManipulationTarget,
+        minScale:Float = 0f, maxScale:Float = 10f,
+    ) : this(UtLib.applicationContext, enableDoubleTap, manipulationTarget, minScale, maxScale)
+
     val gestureInterpreter = UtGestureInterpreter(applicationContext, true, !enableDoubleTap)
     val agent = UtManipulationAgent(manipulationTarget, minScale, maxScale)
 

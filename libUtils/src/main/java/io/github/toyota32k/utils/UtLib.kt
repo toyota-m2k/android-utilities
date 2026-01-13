@@ -2,6 +2,7 @@
 
 package io.github.toyota32k.utils
 
+import android.content.Context
 import io.github.toyota32k.logger.UtLog
 import io.github.toyota32k.logger.UtLogConfig
 
@@ -9,7 +10,8 @@ object UtLib {
     var DEBUG:Boolean
         get() = UtLogConfig.debug
         set(v) { UtLogConfig.debug = v }
-    var logger = UtLog("UtLib")
+    var logger:UtLog = UtLog("UtLib")
+    lateinit var applicationContext: Context
 }
 
 

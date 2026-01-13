@@ -57,6 +57,10 @@ class UtGestureInterpreter(
     enableScaleEvent:Boolean,
     val rapidTap:Boolean = false        // true にすると、onSingleTapUp で tapEvent を発行。ただし、doubleTapEventは無効になる。
 ) : OnTouchListener {
+    constructor(
+        enableScaleEvent:Boolean,
+        rapidTap:Boolean = false        // true にすると、onSingleTapUp で tapEvent を発行。ただし、doubleTapEventは無効になる。
+    ) : this(UtLib.applicationContext, enableScaleEvent, rapidTap)
     // region Scroll / Swipe Event
 
     interface IScrollEvent {

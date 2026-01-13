@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import io.github.toyota32k.utils.UtLib
 import io.github.toyota32k.utils.UtLib.logger
 import java.io.File
 import java.io.FileDescriptor
@@ -19,8 +20,8 @@ import java.nio.file.Files
  * File と Uri+Context によるファイルの扱いを抽象化するi/f
  */
 interface IUtFile: Comparable<IUtFile> {
-    val length:Long
     val safeUri:Uri
+    fun getLength():Long
     fun getFileName() : String?
     fun getContentType() : String?
     fun getLastModifiedTime():Long?
@@ -46,9 +47,9 @@ interface IUtFileEx: IUtFile {
  */
 abstract class UtFile:IUtFileEx {
     companion object {
-        fun fromUri(uri:Uri):UtFile {
+        fun fromUri(uri:Uri, context: Context?=null):UtFile {
             return when (uri.scheme) {
-                "content" -> UtContentFile(uri)
+                "content" -> UtContentFile(uri, context?.applicationContext ?: UtLib.applicationContext)
                 "file" -> UtJavaFile(File(uri.path!!))
                 else -> throw IllegalArgumentException("invalid uri")
             }
@@ -110,13 +111,14 @@ abstract class UtFile:IUtFileEx {
  * java.io.File ベースの IUtFile実装
  */
 class UtJavaFile(val path:File):UtFile() {
-    override val length: Long
-        get() = try {
+    override fun getLength(): Long {
+        return try {
             path.length()
         } catch (e: Throwable) {
             logger.error(e)
             -1L
         }
+    }
 
     override fun getLastModifiedTime(): Long? {
         return try {
@@ -165,31 +167,23 @@ class UtJavaFile(val path:File):UtFile() {
  * content:で始まるUriとContentResolver による IUtFile実装
  * file:も使えるように配慮はしているが、基本的に、file:は java.io.File として扱うことを推奨。
  */
-class UtContentFile(val uri:Uri):UtFile() {
-    companion object {
-        lateinit var context: Context
-        fun init(context: Context) {
-            this.context = context.applicationContext
+class UtContentFile(val uri:Uri, val context: Context = UtLib.applicationContext):UtFile() {
+    override fun getLength(): Long {
+        val contentResolver = context.contentResolver ?: return -1L
+
+        // ContentResolverから取得を試みる
+        contentResolver.query(uri, null, null, null, null)?.use {
+            if (it.moveToFirst()) {
+                val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+                return it.getLong(sizeIndex)
+            }
         }
+        // 取得できなければファイルを開いて取得する
+        contentResolver.openFileDescriptor(uri, "r")?.use {
+            return it.statSize
+        }
+        return -1L
     }
-
-    override val length: Long
-        get() {
-            val contentResolver = context.contentResolver ?: return -1L
-
-            // ContentResolverから取得を試みる
-            contentResolver.query(uri, null, null, null, null)?.use {
-                if (it.moveToFirst()) {
-                    val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-                    return it.getLong(sizeIndex)
-                }
-            }
-            // 取得できなければファイルを開いて取得する
-            contentResolver.openFileDescriptor(uri, "r")?.use {
-                return it.statSize
-            }
-            return -1L
-        }
 
     override fun getLastModifiedTime(): Long? {
         return try {
@@ -268,9 +262,10 @@ class UtContentFile(val uri:Uri):UtFile() {
     }
 }
 
-fun File.toUtFile(): IUtFile {
+fun File.toUtFile(): UtFile {
     return UtFile.fromFile(this)
 }
-fun Uri.toUtFile(): IUtFile {
-    return UtFile.fromUri(this)
+
+fun Uri.toUtFile(context: Context?=null): UtFile {
+    return UtFile.fromUri(this, context)
 }
