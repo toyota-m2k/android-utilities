@@ -3,9 +3,11 @@ package io.github.toyota32k.utils.android
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import io.github.toyota32k.utils.UtLib
@@ -149,7 +151,12 @@ class UtJavaFile(val path:File):UtFile() {
         return path.name
     }
     override fun getContentType() : String? {
-        return Files.probeContentType(path.toPath())
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Files.probeContentType(path.toPath())
+        } else {
+            val extension = path.extension.lowercase()
+            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        }
     }
 
     override val safeUri:Uri get() = path.toUri()
@@ -198,7 +205,7 @@ class UtContentFile(val uri:Uri, val context: Context = UtLib.applicationContext
 
                 else -> null
             }
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             return null
         }
     }
