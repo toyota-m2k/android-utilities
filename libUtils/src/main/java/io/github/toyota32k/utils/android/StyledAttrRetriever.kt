@@ -14,6 +14,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.StyleRes
 import androidx.annotation.StyleableRes
 import androidx.core.content.res.getColorOrThrow
+import io.github.toyota32k.utils.UtLib
 import kotlin.math.roundToInt
 
 /**
@@ -277,8 +278,8 @@ interface IDimension {
     operator fun times(v:Int):IDimension
     operator fun times(v:Float): IDimension
     operator fun unaryMinus():IDimension = times(-1)
-    fun dp(context: Context) : Int
-    fun px(context: Context) : Int
+    fun dp(context: Context=UtLib.applicationContext) : Int
+    fun px(context: Context=UtLib.applicationContext) : Int
 }
 
 val Int.dp get() = StyledAttrRetriever.DP(this)
