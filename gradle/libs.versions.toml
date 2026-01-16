@@ -1,8 +1,7 @@
 [versions]
 #plugins
 gson = "2.13.2"
-kotlin = "2.3.0"
-agp = "8.13.2"
+agp = "9.0.0"
 
 #libraries
 core = "1.7.0"
@@ -56,6 +55,5 @@ androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 
 [plugins]
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
