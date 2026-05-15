@@ -5,10 +5,13 @@ package io.github.toyota32k.utils.android
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.graphics.Point
+import android.os.Build
 import android.os.Parcel
 import android.util.Size
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ListView
 import androidx.annotation.StringRes
 import androidx.core.view.children
@@ -113,6 +116,24 @@ fun Context.getStringOrNull(@StringRes id:Int) : String? {
 
 fun Context.getStringOrDefault(@StringRes int: Int, default: String): String {
     return getStringOrNull(int) ?: default
+}
+
+fun Context.getScreenSize(): Size {
+    val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        // Android 11以降
+        val metrics = windowManager.currentWindowMetrics
+        val bounds = metrics.bounds
+        Size(bounds.width(), bounds.height())
+    } else {
+        // Android 10以前
+        @Suppress("DEPRECATION")
+        val display = windowManager.defaultDisplay
+        val point = Point()
+        @Suppress("DEPRECATION")
+        display.getRealSize(point)
+        Size(point.x, point.y)
+    }
 }
 
 
