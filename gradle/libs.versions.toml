@@ -1,17 +1,17 @@
 [versions]
 #plugins
-gson = "2.13.2"
-agp = "9.1.0"
+gson = "2.14.0"
+agp = "9.2.1"
 
 #libraries
 core = "1.7.0"
 coreTesting = "2.2.0"
 core-ktx = "1.18.0"
 appcompat = "1.7.1"
-androidLogger = "2.1.8"
-kotlinxCoroutinesTest = "1.10.2"
+androidLogger = "2.1.9"
+kotlinxCoroutinesTest = "1.11.0"
 lifecycleExtensions = "2.2.0"
-material = "1.13.0"
+material = "1.14.0"
 
 
 constraintlayout = "2.2.1"
