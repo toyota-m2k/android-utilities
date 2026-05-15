@@ -44,11 +44,14 @@ class UtScaleGestureManager(
     /**
      * Activity#onCreate()から呼び出す
      */
-    @Suppress("unused")
     fun setup(owner:LifecycleOwner, view:View? = null, setupMe: IListenerBuilder.()->Unit) : UtScaleGestureManager {
         gestureInterpreter.setup(owner, view ?: manipulationTarget.parentView, setupMe)
-        gestureInterpreter.scrollListener.add(owner, agent::onScroll)
-        gestureInterpreter.scaleListener.add(owner, agent::onScale)
+        if (gestureInterpreter.scrollListener.count==0) {
+            gestureInterpreter.scrollListener.add(owner, agent::onScroll)
+        }
+        if (gestureInterpreter.scaleListener.count==0) {
+            gestureInterpreter.scaleListener.add(owner, agent::onScale)
+        }
         return this
     }
 }

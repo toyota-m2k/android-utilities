@@ -5,7 +5,8 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import io.github.toyota32k.utils.UtLib
 
-object PackageUtil { fun getPackageInfo(context: Context): PackageInfo? {
+object PackageUtil {
+    fun getPackageInfo(context: Context=UtLib.applicationContext): PackageInfo? {
         return try {
             val name = context.packageName
             val pm = context.packageManager
@@ -17,7 +18,7 @@ object PackageUtil { fun getPackageInfo(context: Context): PackageInfo? {
 
     }
 
-    fun getVersion(context: Context):String? {
+    fun getVersion(context: Context=UtLib.applicationContext):String? {
         return try {
             // バージョン番号の文字列を返す
             getPackageInfo(context)?.versionName
