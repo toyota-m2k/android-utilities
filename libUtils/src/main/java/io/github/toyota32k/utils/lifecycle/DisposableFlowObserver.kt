@@ -39,9 +39,9 @@ import kotlin.coroutines.CoroutineContext
  * と書くと、このwithContext()は永久に戻ってこない。
  * これらは、発見・調査が困難なバグの原因となるので要注意。
  */
-class DisposableFlowObserver<T> constructor(flow: Flow<T>, coroutineContext: CoroutineContext, private val callback:(v:T)->Unit): IDisposableEx {
-    constructor(flow: Flow<T>, callback:(v:T)->Unit) : this(flow, Dispatchers.Main + SupervisorJob(), callback)
-    constructor(flow: Flow<T>, owner: LifecycleOwner, callback:(v:T)->Unit) : this(flow, owner.lifecycleScope.coroutineContext, callback)
+class DisposableFlowObserver<T> constructor(flow: Flow<T>, coroutineContext: CoroutineContext, private val callback:suspend (v:T)->Unit): IDisposableEx {
+    constructor(flow: Flow<T>, callback:suspend (v:T)->Unit) : this(flow, Dispatchers.Main + SupervisorJob(), callback)
+    constructor(flow: Flow<T>, owner: LifecycleOwner, callback:suspend (v:T)->Unit) : this(flow, owner.lifecycleScope.coroutineContext, callback)
     companion object {
         val idGenerator = AtomicInteger(0)
     }
@@ -70,23 +70,23 @@ class DisposableFlowObserver<T> constructor(flow: Flow<T>, coroutineContext: Cor
 /**
  * Flow に LifecycleOwner のスコープでオブザーバーを登録し、登録解除用の IDisposable を返す。
  */
-fun <T> Flow<T>.disposableObserve(owner: LifecycleOwner, callback:(value:T)->Unit):DisposableFlowObserver<T> =
+fun <T> Flow<T>.disposableObserve(owner: LifecycleOwner, callback:suspend (value:T)->Unit):DisposableFlowObserver<T> =
     DisposableFlowObserver(this, owner, callback)
 /**
  * Flow にCoroutineContextのスコープでオブザーバーを登録し、登録解除用の IDisposable を返す。
  * 利用注意：DisposableFlowObserver のコメントを参照
  */
-fun <T> Flow<T>.disposableObserve(coroutineContext: CoroutineContext, callback:(value:T)->Unit):DisposableFlowObserver<T> =
+fun <T> Flow<T>.disposableObserve(coroutineContext: CoroutineContext, callback:suspend (value:T)->Unit):DisposableFlowObserver<T> =
     DisposableFlowObserver(this, coroutineContext, callback)
 
 /**
  * Flow に Dispatchers.Mainスコープでオブザーバーを登録し、登録解除用の IDisposable を返す。
  */
-fun <T> Flow<T>.disposableObserve(callback:(value:T)->Unit):DisposableFlowObserver<T> =
+fun <T> Flow<T>.disposableObserve(callback:suspend (value:T)->Unit):DisposableFlowObserver<T> =
     DisposableFlowObserver(this, callback)
 
 
-class DisposableMultiFlowObserver( flows: Array<Flow<*>>, coroutineContext: CoroutineContext, callback:(v:Array<*>)->Unit): IDisposableEx {
+class DisposableMultiFlowObserver( flows: Array<Flow<*>>, coroutineContext: CoroutineContext, callback:suspend (v:Array<*>)->Unit): IDisposableEx {
     private var job: Job?
     private val id = idGenerator.getAndIncrement()
 
@@ -109,22 +109,22 @@ class DisposableMultiFlowObserver( flows: Array<Flow<*>>, coroutineContext: Coro
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T1,T2> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, coroutineContext: CoroutineContext, callback:(T1, T2)->Unit):IDisposableEx =
+fun <T1,T2> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, coroutineContext: CoroutineContext, callback:suspend (T1, T2)->Unit):IDisposableEx =
     DisposableMultiFlowObserver(arrayOf(flow1, flow2), coroutineContext) {
         callback(it[0] as T1, it[1] as T2)
     }
 @Suppress("UNCHECKED_CAST")
-fun <T1,T2,T3> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, coroutineContext: CoroutineContext, callback:(T1, T2, T3)->Unit):IDisposableEx =
+fun <T1,T2,T3> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, coroutineContext: CoroutineContext, callback:suspend (T1, T2, T3)->Unit):IDisposableEx =
     DisposableMultiFlowObserver(arrayOf(flow1, flow2,flow3), coroutineContext) {
         callback(it[0] as T1, it[1] as T2, it[2] as T3)
     }
 @Suppress("UNCHECKED_CAST")
-fun <T1,T2,T3,T4> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, flow4:Flow<T4>, coroutineContext: CoroutineContext, callback:(T1, T2, T3, T4)->Unit):IDisposableEx =
+fun <T1,T2,T3,T4> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, flow4:Flow<T4>, coroutineContext: CoroutineContext, callback:suspend (T1, T2, T3, T4)->Unit):IDisposableEx =
     DisposableMultiFlowObserver(arrayOf(flow1, flow2,flow3, flow4), coroutineContext) {
         callback(it[0] as T1, it[1] as T2, it[2] as T3, it[3] as T4)
     }
 @Suppress("UNCHECKED_CAST")
-fun <T1,T2,T3,T4,T5> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, flow4:Flow<T4>, flow5:Flow<T5>, coroutineContext: CoroutineContext, callback:(T1, T2, T3, T4, T5)->Unit):IDisposableEx =
+fun <T1,T2,T3,T4,T5> disposableObserveMulti(flow1: Flow<T1>, flow2: Flow<T2>, flow3:Flow<T3>, flow4:Flow<T4>, flow5:Flow<T5>, coroutineContext: CoroutineContext, callback:suspend (T1, T2, T3, T4, T5)->Unit):IDisposableEx =
     DisposableMultiFlowObserver(arrayOf(flow1, flow2,flow3, flow4, flow5), coroutineContext) {
         callback(it[0] as T1, it[1] as T2, it[2] as T3, it[3] as T4, it[4] as T5)
     }

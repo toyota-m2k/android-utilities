@@ -14,13 +14,13 @@ import kotlin.coroutines.CoroutineContext
  */
 class ObservableFlow<T>(val flow: Flow<T>): IDisposable, Flow<T> by flow {
     private val disposer = Disposer()
-    fun observe(owner: LifecycleOwner, fn:(T)->Unit): IDisposable {
+    fun observe(owner: LifecycleOwner, fn:suspend (T)->Unit): IDisposable {
         assert(!disposer.disposed)
         return flow.disposableObserve(owner, fn).apply {
             disposer.register(this)
         }
     }
-    fun observe(coroutineContext: CoroutineContext, fn:(T)->Unit): IDisposable {
+    fun observe(coroutineContext: CoroutineContext, fn:suspend (T)->Unit): IDisposable {
         assert(!disposer.disposed)
         return flow.disposableObserve(coroutineContext, fn).apply {
             disposer.register(this)
