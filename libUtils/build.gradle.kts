@@ -8,6 +8,10 @@ plugins {
 group = "com.github.toyota-m2k"
 version = "1.0"
 
+kotlin {
+    jvmToolchain(21)
+}
+
 configure<LibraryExtension> {
     namespace = "io.github.toyota32k.utils"
     compileSdk = 36
@@ -26,8 +30,8 @@ configure<LibraryExtension> {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     testOptions.unitTests.isIncludeAndroidResources = true
     packaging.resources.excludes.add("META-INF/DEPENDENCIES")
