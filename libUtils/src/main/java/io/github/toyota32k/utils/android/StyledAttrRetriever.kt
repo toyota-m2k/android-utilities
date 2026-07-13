@@ -16,6 +16,7 @@ import androidx.annotation.StyleableRes
 import androidx.core.content.res.getColorOrThrow
 import io.github.toyota32k.utils.UtLib
 import kotlin.math.roundToInt
+import androidx.core.graphics.drawable.toDrawable
 
 /**
  * StyledAttributeのラッパークラス
@@ -115,6 +116,17 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
         return getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha)
     }
 
+    private fun getResourceType(@StyleableRes attrId: Int): String? {
+        return sa.peekValue(attrId)?.let { tv->
+            context.resources.getResourceTypeName(tv.resourceId) }
+    }
+    private fun getDrawableOrNull(@StyleableRes attrId: Int): Drawable? {
+        return try {
+            sa.getDrawable(attrId)
+        } catch (e: Throwable) {
+            null
+        }
+    }
 
     /**
      * Drawableを取得する。（background属性など、Drawable / color のどちらでも受け取れる属性の取得に使う。
@@ -127,7 +139,7 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
      * @param def  上記のどれも取得できない場合に使われる色（ちゃんと作りこんでいたら、これは使われないはず）
      */
     fun getDrawable(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColor(attrId, themeAttrId, fallbackThemeAttrRes, def))
+        return getDrawableOrNull(attrId) ?: getColor(attrId,themeAttrId,fallbackThemeAttrRes,def).toDrawable()
     }
 
     /**
@@ -141,14 +153,14 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
      * @param def  上記のどれも取得できない場合に使われる色（ちゃんと作りこんでいたら、これは使われないはず）
      */
     fun getDrawable(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColor(attrId, themeAttrId, 0, def))
+        return getDrawableOrNull(attrId) ?: getColor(attrId, themeAttrId, 0, def).toDrawable()
     }
 
     /**
      * 普通の getDrawable()
      */
     fun getDrawable(@StyleableRes attrId:Int): Drawable? {
-        return sa.getDrawable(attrId)
+        return getDrawableOrNull(attrId)
     }
 
     /**
@@ -164,10 +176,10 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
      * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int, alpha: Int): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, alpha))
+        return getDrawableOrNull(attrId) ?: getColorWithAlphaOnFallback(attrId,themeAttrId,fallbackThemeAttrRes,def,alpha).toDrawable()
     }
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @AttrRes fallbackThemeAttrRes: Int, @ColorInt def: Int, alpha: Float): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, fallbackThemeAttrRes, def, alpha))
+        return getDrawableOrNull(attrId) ?: getColorWithAlphaOnFallback(attrId,themeAttrId,fallbackThemeAttrRes,def,alpha).toDrawable()
     }
 
     /**
@@ -183,10 +195,10 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
      * @param alpha カスタム属性以外の場合に設定するアルファ値(0..0xFF)
      */
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Int): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha))
+        return getDrawableOrNull(attrId) ?: getColorWithAlphaOnFallback(attrId,themeAttrId,0,def,alpha).toDrawable()
     }
     fun getDrawableWithAlphaOnFallback(@StyleableRes attrId: Int, @AttrRes themeAttrId: Int, @ColorInt def: Int, alpha: Float): Drawable {
-        return sa.getDrawable(attrId) ?: ColorDrawable(getColorWithAlphaOnFallback(attrId, themeAttrId, 0, def, alpha))
+        return getDrawableOrNull(attrId) ?: getColorWithAlphaOnFallback(attrId,themeAttrId,0,def,alpha).toDrawable()
     }
 
     data class DP(val v:Int):IDimension {
@@ -296,7 +308,7 @@ fun Resources.Theme.getAttrColor(@AttrRes attrId:Int, @ColorInt def:Int=0):Int {
 }
 
 fun Resources.Theme.getAttrColorAsDrawable(@AttrRes attrId:Int, @ColorInt def:Int=0): Drawable {
-    return ColorDrawable(getAttrColor(attrId, def))
+    return getAttrColor(attrId, def).toDrawable()
 }
 
 
