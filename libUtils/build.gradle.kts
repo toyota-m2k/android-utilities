@@ -14,7 +14,7 @@ kotlin {
 
 configure<LibraryExtension> {
     namespace = "io.github.toyota32k.utils"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 23
