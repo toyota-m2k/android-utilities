@@ -14,7 +14,10 @@ kotlin {
 
 configure<LibraryExtension> {
     namespace = "io.github.toyota32k.utils"
-    compileSdk = 37
+    compileSdk {
+        version = release(37)
+        compileSdkMinor = 1
+    }
 
     defaultConfig {
         minSdk = 23
@@ -54,7 +57,7 @@ dependencies {
     implementation(libs.lifecycleViewmodelKtx)
     implementation(libs.lifecycleService)
     implementation(libs.gson)
-    api(libs.android.logger)
+    implementation(libs.android.logger)
     implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
