@@ -46,5 +46,6 @@ dependencies {
     androidTestImplementation(libs.junitExt)
     androidTestImplementation(libs.espressoCore)
 
+    implementation(libs.android.logger)
     implementation(project(":libUtils"))
 }
