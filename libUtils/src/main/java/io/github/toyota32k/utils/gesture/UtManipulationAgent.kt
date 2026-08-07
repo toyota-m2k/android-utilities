@@ -9,12 +9,14 @@ import io.github.toyota32k.utils.UtLib
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.Float.min
-import java.util.EnumSet
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sign
 
 /**
  * スクロール / ズーム操作をカプセル化するクラス
@@ -267,7 +269,7 @@ class UtManipulationAgent(
         suspend fun suspendStart(duration:Long, update:(Float)->Unit):Boolean {
             currentUpdater = update
             animator.duration = duration
-            return suspendCoroutine {
+            return suspendCancellableCoroutine {
                 animating = it
                 animator.start()
             }
