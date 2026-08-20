@@ -17,6 +17,7 @@ import androidx.core.content.res.getColorOrThrow
 import io.github.toyota32k.utils.UtLib
 import kotlin.math.roundToInt
 import androidx.core.graphics.drawable.toDrawable
+import io.github.toyota32k.utils.UtLib.applicationContext
 
 /**
  * StyledAttributeのラッパークラス
@@ -201,66 +202,79 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
         return getDrawableOrNull(attrId) ?: getColorWithAlphaOnFallback(attrId,themeAttrId,0,def,alpha).toDrawable()
     }
 
-    data class DP(val v:Int):IDimension {
+    data class DP(val v:Float):IDimension {
+        constructor(v:Int): this(v.toFloat())
         override fun div(v: Int): IDimension {
             return DP(this.v / v)
         }
 
         override fun div(v: Float): IDimension {
-            return DP((this.v.toFloat() / v).roundToInt())
+            return DP(this.v / v)
         }
         override fun times(v: Int): IDimension {
             return DP(this.v * v)
         }
 
         override fun times(v: Float): IDimension {
-            return DP((this.v.toFloat() * v).roundToInt())
+            return DP(this.v * v)
         }
-        override fun dp(context: Context):Int {
+        override fun dpf():Float {
             return v
         }
-        override fun px(context: Context):Int {
-            return context.dp2px(v)
+        override fun dp():Int {
+            return v.roundToInt()
         }
-        fun PX(context: Context):PX {
-            return PX(dp(context))
+        override fun pxf():Float {
+            return UtLib.applicationContext.dp2px(v)
         }
-        operator fun plus(v: DP): DP {
-            return DP(this.v + v.v)
+        override fun px():Int {
+            return UtLib.applicationContext.dp2px(v).roundToInt()
         }
-        operator fun minus(v: DP): DP {
-            return DP(this.v - v.v)
+        fun PX():PX {
+            return PX(pxf())
+        }
+        override operator fun plus(v: IDimension): IDimension {
+            return DP(this.v + v.dpf())
+        }
+        override operator fun minus(v: IDimension): IDimension {
+            return DP(this.v - v.dpf())
         }
     }
-    data class PX(val v:Int):IDimension {
+    data class PX(val v:Float):IDimension {
+        constructor(v:Int):this(v.toFloat())
         override fun div(v: Int): IDimension {
             return PX(this.v / v)
         }
         override fun div(v: Float): IDimension {
-            return PX((this.v.toFloat()/v).roundToInt())
+            return PX(this.v/v)
         }
         override fun times(v: Int): IDimension {
             return PX(this.v * v)
         }
         override fun times(v: Float): IDimension {
-            return PX((this.v.toFloat() * v).roundToInt())
+            return PX(this.v * v)
         }
-        override fun dp(context: Context):Int {
-            return context.px2dp(v)
+        override fun dpf():Float {
+            return UtLib.applicationContext.px2dp(v)
         }
-        override fun px(context: Context):Int {
+        override fun dp():Int {
+            return UtLib.applicationContext.px2dp(v).roundToInt()
+        }
+        override fun pxf():Float {
             return v
         }
-        fun DP(context: Context):DP {
-            return DP(dp(context))
+        override fun px():Int {
+            return v.roundToInt()
         }
-        operator fun plus(v: PX): PX {
-            return PX(this.v + v.v)
+        fun DP():DP {
+            return DP(dpf())
         }
-        operator fun minus(v: PX): PX {
-            return PX(this.v - v.v)
+        override operator fun plus(v: IDimension): IDimension {
+            return PX(this.v + v.pxf())
         }
-
+        override operator fun minus(v: IDimension): IDimension {
+            return PX(this.v - v.pxf())
+        }
     }
 
     /**
@@ -270,7 +284,7 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
      * @param def  取得できない場合に使う値（IDimension型）
      */
     fun getDimensionPixelSize(@StyleableRes attrId: Int, def: IDimension): Int {
-        return sa.getDimensionPixelSize(attrId, def.px(context))
+        return sa.getDimensionPixelSize(attrId, def.px())
     }
 
     override fun close() {
@@ -290,20 +304,27 @@ interface IDimension {
     operator fun times(v:Int):IDimension
     operator fun times(v:Float): IDimension
     operator fun unaryMinus():IDimension = times(-1)
-    fun dp(context: Context=UtLib.applicationContext) : Int
-    fun px(context: Context=UtLib.applicationContext) : Int
+    fun dp() : Int
+    fun dpf() : Float
+    fun px() : Int
+    fun pxf() : Float
+    operator fun plus(v:IDimension):IDimension
+    operator fun minus(v: IDimension): IDimension
 }
 
 val Int.dp get() = StyledAttrRetriever.DP(this)
 val Int.px get() = StyledAttrRetriever.PX(this)
-fun dp(v:Int) = StyledAttrRetriever.DP(v)
-fun px(v:Int) = StyledAttrRetriever.PX(v)
+val Float.dp get() = StyledAttrRetriever.DP(this)
+val Float.px get() = StyledAttrRetriever.PX(this)
+
+//fun dp(v:Int) = StyledAttrRetriever.DP(v)
+//fun px(v:Int) = StyledAttrRetriever.PX(v)
 
 @ColorInt
 fun Resources.Theme.getAttrColor(@AttrRes attrId:Int, @ColorInt def:Int=0):Int {
     val typedValue = TypedValue()
     return if(this.resolveAttribute(attrId, typedValue, true)) {
-        return typedValue.data
+        typedValue.data
     } else def
 }
 
