@@ -49,9 +49,9 @@ interface IUtFileEx: IUtFile {
  */
 abstract class UtFile:IUtFileEx {
     companion object {
-        fun fromUri(uri:Uri, context: Context?=null):UtFile {
+        fun fromUri(uri:Uri, context: Context=UtLib.applicationContext):UtFile {
             return when (uri.scheme) {
-                "content" -> UtContentFile(uri, context?.applicationContext ?: UtLib.applicationContext)
+                "content" -> UtContentFile(uri, context)
                 "file" -> UtJavaFile(File(uri.path!!))
                 else -> throw IllegalArgumentException("invalid uri")
             }
@@ -273,6 +273,6 @@ fun File.toUtFile(): UtFile {
     return UtFile.fromFile(this)
 }
 
-fun Uri.toUtFile(context: Context?=null): UtFile {
+fun Uri.toUtFile(context: Context = UtLib.applicationContext): UtFile {
     return UtFile.fromUri(this, context)
 }

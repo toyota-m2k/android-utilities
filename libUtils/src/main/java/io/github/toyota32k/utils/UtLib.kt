@@ -11,7 +11,16 @@ object UtLib {
         get() = UtLogConfig.debug
         set(v) { UtLogConfig.debug = v }
     var logger:UtLog = UtLog("UtLib")
-    lateinit var applicationContext: Context
+    private var mApplicationContext: Context? = null
+    val applicationContext: Context get() = mApplicationContext ?: error("applicationContext is not initialized")
+    val applicationContextOrNull: Context? get() = mApplicationContext
+    fun initialize(applicationContext: Context) {
+        mApplicationContext = applicationContext.applicationContext
+    }
+    fun checkInitialized():Boolean {
+        logger.assertStrongly(mApplicationContext!=null, "applicationContext is not initialized")
+        return mApplicationContext!=null
+    }
 }
 
 
