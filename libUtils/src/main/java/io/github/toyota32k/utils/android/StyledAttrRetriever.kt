@@ -278,13 +278,31 @@ class StyledAttrRetriever(private val context: Context, @Suppress("MemberVisibil
     }
 
     /**
-     * サイズをpx値で取得
+     * サイズを px値(Int型)で取得 (1px以上を保証)
      *
      * @param attrId カスタム属性(attrs.xmlで、declare-styleable によって定義された attr id)
      * @param def  取得できない場合に使う値（IDimension型）
      */
     fun getDimensionPixelSize(@StyleableRes attrId: Int, def: IDimension): Int {
         return sa.getDimensionPixelSize(attrId, def.px())
+    }
+    /**
+     * サイズを px(Int型)で取得 (0pxあり）
+     *
+     * @param attrId カスタム属性(attrs.xmlで、declare-styleable によって定義された attr id)
+     * @param def  取得できない場合に使う値（IDimension型）
+     */
+    fun getDimensionPixelOffset(@StyleableRes attrId: Int, def: IDimension): Int {
+        return sa.getDimensionPixelOffset(attrId, def.px())
+    }
+    /**
+     * サイズを px(Float型)で取得
+     *
+     * @param attrId カスタム属性(attrs.xmlで、declare-styleable によって定義された attr id)
+     * @param def  取得できない場合に使う値（IDimension型）
+     */
+    fun getDimension(@StyleableRes attrId: Int, def: IDimension): Float {
+        return sa.getDimension(attrId, def.pxf())
     }
 
     override fun close() {
@@ -303,13 +321,16 @@ interface IDimension {
     operator fun div(v:Float): IDimension
     operator fun times(v:Int):IDimension
     operator fun times(v:Float): IDimension
-    operator fun unaryMinus():IDimension = times(-1)
+    operator fun unaryMinus():IDimension =
+        times(-1f)
     fun dp() : Int
     fun dpf() : Float
     fun px() : Int
     fun pxf() : Float
     operator fun plus(v:IDimension):IDimension
     operator fun minus(v: IDimension): IDimension
+    fun pxForSize(): Int =
+        px().coerceAtLeast(1)
 }
 
 val Int.dp get() = StyledAttrRetriever.DP(this)
