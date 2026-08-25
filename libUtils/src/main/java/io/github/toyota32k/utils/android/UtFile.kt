@@ -49,13 +49,16 @@ interface IUtFileEx: IUtFile {
  */
 abstract class UtFile:IUtFileEx {
     companion object {
-        fun fromUri(uri:Uri, context: Context?=null):UtFile {
+        fun fromUri(uri:Uri, context: Context):UtFile {
             return when (uri.scheme) {
-                "content" -> UtContentFile(uri, context?.applicationContext ?: UtLib.applicationContext)
+                "content" -> UtContentFile(uri, context)
                 "file" -> UtJavaFile(File(uri.path!!))
                 else -> throw IllegalArgumentException("invalid uri")
             }
         }
+        fun fromUri(uri:Uri):UtFile
+            = fromUri(uri, UtLib.applicationContext)
+
         fun fromFile(file:File):UtFile {
             return UtJavaFile(file)
         }
@@ -174,7 +177,9 @@ class UtJavaFile(val path:File):UtFile() {
  * content:で始まるUriとContentResolver による IUtFile実装
  * file:も使えるように配慮はしているが、基本的に、file:は java.io.File として扱うことを推奨。
  */
-class UtContentFile(val uri:Uri, val context: Context = UtLib.applicationContext):UtFile() {
+class UtContentFile(val uri:Uri, context: Context):UtFile() {
+    constructor(uri:Uri):this(uri, UtLib.applicationContext)
+    val context = context.applicationContext ?: UtLib.applicationContext
     override fun getLength(): Long {
         val contentResolver = context.contentResolver ?: return -1L
 
@@ -273,6 +278,10 @@ fun File.toUtFile(): UtFile {
     return UtFile.fromFile(this)
 }
 
-fun Uri.toUtFile(context: Context?=null): UtFile {
+fun Uri.toUtFile(context: Context): UtFile {
     return UtFile.fromUri(this, context)
 }
+fun Uri.toUtFile(): UtFile {
+    return UtFile.fromUri(this)
+}
+
